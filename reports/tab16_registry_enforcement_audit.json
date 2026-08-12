@@ -1,0 +1,30 @@
+{
+  "bypass_detected": false,
+  "findings": [],
+  "status": "PASS",
+  "scanned": [
+    "app/consensus"
+  ],
+  "loader_probe": {
+    "RF": {
+      "ok": true,
+      "artifact_path": "models/ae16f_rf_serving_safe.joblib",
+      "threshold": 0.6608411682788434,
+      "unwrapped": true
+    },
+    "XGB": {
+      "ok": true,
+      "artifact_path": "models/ae16f_xgb_serving_safe.joblib",
+      "threshold": 0.9882992506027222,
+      "unwrapped": true
+    },
+    "TAB": {
+      "ok": true,
+      "artifact_path": "models/ae16_tab16_direct_target_serving_safe.joblib",
+      "threshold": 0.9928224834607726,
+      "unwrapped": true
+    }
+  },
+  "loader_ok": true,
+  "registry_maps_tab_to_tab16": true
+}

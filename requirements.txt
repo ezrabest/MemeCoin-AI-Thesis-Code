@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+pydantic>=2,<3
+httpx
+websockets
+google-generativeai
+openai
+python-dotenv
+pandas
+pyarrow
+scikit-learn
+joblib

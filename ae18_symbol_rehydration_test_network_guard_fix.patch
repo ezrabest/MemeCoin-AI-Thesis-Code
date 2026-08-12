@@ -1,0 +1,22 @@
+﻿--- app/clean_forward/symbol_rehydration.py2026-08-01 09:12:24.986381705 +0000
++++ app/clean_forward/symbol_rehydration.py2026-08-01 09:12:24.858381701 +0000
+@@ -461,6 +461,7 @@
+         outcome["failure_reason"] = f"chain/segment not extractable from canonical URL: {url}"
+         return outcome
+ 
++    explicit_validator_supplied = validator is not None
+     if validator is None:
+         from app.ae13b_product.dexscreener_pair_verify import validate_dexscreener_pair
+ 
+@@ -487,7 +488,10 @@
+     # but not canonical on-chain pair addresses. For URL-first identity, fall
+     # through to provider-URL and token-address based resolver instead of
+     # treating that as final.
+-    if not (cell(payload.get("provider_base_token_symbol")) and cell(payload.get("provider_quote_token_symbol"))):
++    if (
++        not explicit_validator_supplied
++        and not (cell(payload.get("provider_base_token_symbol")) and cell(payload.get("provider_quote_token_symbol")))
++    ):
+         payload, resolver_meta = _lookup_pair_payload_multistage(row, chain=chain, segment=segment)
+ 
+     if not payload:

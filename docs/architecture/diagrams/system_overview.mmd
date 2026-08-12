@@ -1,0 +1,86 @@
+flowchart TD
+    subgraph Sources["Data Sources"]
+        DS["DexScreener API"]
+        RSS["Cointelegraph / Decrypt RSS"]
+        SOL["Solana RPC"]
+        HEL["Helius API"]
+    end
+
+    subgraph L1["Layer 1 — Quantitative Ranking"]
+        FB["Feature Builder"]
+        XGB["XGB broad ranker"]
+        TAB["TAB / TabICL focused ranker"]
+        RF["RF confirmation"]
+    end
+
+    subgraph L2["Layer 2 — Consensus Economics"]
+        T1["Tier 1: TAB_XGB_RF_ALL3"]
+        T2["Tier 2: TAB_RF_ONLY"]
+        REJ["Reject: TAB_XGB_ONLY / XGB_RF_ONLY"]
+        EXIT["Exit simulation: TP / SL / time-stop / fees"]
+        CAP["Pair cap / concentration"]
+        DT["Direct net-profit target"]
+    end
+
+    subgraph L3["Layer 3 — Context Intelligence"]
+        DEX["DexScreener market context"]
+        WAL["Wallet-level whale intelligence"]
+        REP["Reputation / scam risk"]
+        SENT["RSS / news sentiment"]
+    end
+
+    subgraph L4["Layer 4 — Reasoning and Audit"]
+        QW["Qwen / Ollama operational reasoning"]
+        GM["Gemini selective audit"]
+        SAN["Audit reason sanitization"]
+        TRACE["Decision trace"]
+    end
+
+    subgraph Outputs["Outputs"]
+        DEC["PAPER_BUY / WATCH / BLOCK"]
+        UI["UI panels"]
+        DB["SQLite runtime store"]
+        ART["CSV / Parquet / JSONL artifacts"]
+    end
+
+    DS --> FB
+    RSS --> SENT
+    SOL --> WAL
+    HEL --> WAL
+
+    FB --> XGB
+    FB --> TAB
+    FB --> RF
+
+    XGB --> T1
+    TAB --> T1
+    RF --> T1
+    TAB --> T2
+    RF --> T2
+    XGB --> REJ
+    TAB --> REJ
+    RF --> REJ
+
+    T1 --> EXIT
+    T2 --> EXIT
+    EXIT --> CAP
+    CAP --> DT
+
+    DT --> DEX
+    DT --> WAL
+    DT --> SENT
+    DT --> REP
+
+    DEX --> QW
+    WAL --> QW
+    SENT --> QW
+    REP --> QW
+
+    QW --> GM
+    GM --> SAN
+    SAN --> TRACE
+
+    TRACE --> DEC
+    DEC --> UI
+    DEC --> DB
+    TRACE --> ART

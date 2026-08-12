@@ -1,0 +1,65 @@
+# Data Inspection Guide — MemeCoin Whale Trader
+
+SQLite database: `data/trader.db` (override with env `TRADER_DB_PATH`).
+
+## Quick storage check
+
+```bash
+python scripts/inspect_storage.py
+```
+
+Or via API (app running):
+
+```bash
+curl http://localhost:8080/api/debug/storage
+```
+
+## Inspect a coin
+
+```bash
+python scripts/inspect_coin.py --symbol PEPE/WETH
+```
+
+## API endpoints (real stored data)
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/coins` | All stored coins |
+| `GET /api/coins/{id}` | Single coin |
+| `GET /api/coins/{id}/detail` | Full coin inspection bundle |
+| `GET /api/coins/{id}/snapshots` | Historical market snapshots |
+| `GET /api/coins/{id}/chart?interval=1m` | Snapshot-derived OHLC candles |
+| `GET /api/coins/{id}/signals` | Rule-based signals |
+| `GET /api/coins/{id}/whale-alerts` | Aggregate whale-like flow events |
+| `GET /api/coins/{id}/gemini-decisions` | LLM decisions + stored context |
+| `GET /api/trades` | App paper trades (not market events) |
+| `GET /api/raw/recent` | Archived provider payload summaries |
+| `GET /api/pipeline/audit` | Before/after filter pipeline log |
+| `GET /api/tokens/raw` | Latest scan passed/dropped + audit sample |
+
+## Verify watcher is storing data
+
+1. Start app: `python main.py`
+2. Wait 2+ scan cycles (~120s default)
+3. Run `python scripts/inspect_storage.py`
+4. Confirm increasing rows in: `coins`, `market_snapshots`, `raw_provider_payloads`
+5. If whale-like alerts fire: `whale_alerts`, possibly `gemini_decisions`
+
+## Data separation
+
+- **Market / whale-like events**: `whale_alerts`, `market_snapshots`, DexScreener raw payloads
+- **App paper trades**: `paper_trades` (source=`app_paper`)
+- **LLM memory**: `gemini_decisions.input_context_json` + `build_gemini_context(coin_id)`
+
+## Wallet-level whales
+
+`whale_alerts.is_real_wallet_level` is **false** for DexScreener aggregate txn data.
+Real wallet tracking requires on-chain provider integration (Helius, Birdeye, etc.).
+
+## Legacy CSV/JSON (still written)
+
+- `data/paper_trades_log.csv`, `paper_state.json`
+- `data/whale_trades_log.csv`, `llm_decisions_log.csv`
+- `data/token_transparency_log.json`
+
+SQLite is the primary query source for API reads.

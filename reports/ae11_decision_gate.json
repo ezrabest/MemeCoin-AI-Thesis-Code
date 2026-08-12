@@ -1,0 +1,22 @@
+{
+  "phase": "AE11_RUNTIME_PAPER_LOOP",
+  "final_status": "AE11_LOOP_OPERATIONAL",
+  "loop_run_id": "859a130b-3d5f-414a-a90a-973c08baa720",
+  "iterations_completed": 2,
+  "candidates_seen": 0,
+  "orders_created": 1,
+  "positions_opened": 1,
+  "positions_closed": 0,
+  "missed_winners_count": 0,
+  "wallet_configured": false,
+  "private_key_accessed": false,
+  "real_transaction_attempted": false,
+  "live_submission_status": "NOT_SUBMITTED_NO_WALLET",
+  "runtime_inference_status": "BLOCKED_NOT_APPROVED",
+  "exploration_mode": true,
+  "strict_shadow_mode": true,
+  "exploration_max_price_age_seconds": 900.0,
+  "strict_max_price_age_seconds": 30.0,
+  "price_freshness_note": "Exploration validation used 900.0s; strict shadow uses 30.0s; not live-approved.",
+  "recommended_next_phase": "AE11_CONTINUOUS_OPERATION"
+}

@@ -1,0 +1,38 @@
+{
+  "threshold_integrity_passed": true,
+  "current_rows_used_for_threshold": false,
+  "thresholds": [
+    {
+      "threshold_method": "validation_top_pct_quantile",
+      "threshold_value": 0.6608411682788434,
+      "threshold_source": "historical_validation_predictions_top_5pct",
+      "validation_rows_used_for_threshold": 11282,
+      "current_rows_used_for_threshold": false,
+      "threshold_selected_before_current_inference": true,
+      "model_family": "RF",
+      "diagnostic_shadow_only": true
+    },
+    {
+      "threshold_method": "validation_top_pct_quantile",
+      "threshold_value": 0.9882992506027222,
+      "threshold_source": "historical_validation_predictions_top_5pct",
+      "validation_rows_used_for_threshold": 11282,
+      "current_rows_used_for_threshold": false,
+      "threshold_selected_before_current_inference": true,
+      "model_family": "XGB",
+      "diagnostic_shadow_only": true
+    },
+    {
+      "threshold_method": "validation_top_pct_quantile",
+      "threshold_value": 0.8232953548431396,
+      "threshold_source": "historical_validation_predictions_top_5pct",
+      "validation_rows_used_for_threshold": 11282,
+      "current_rows_used_for_threshold": false,
+      "threshold_selected_before_current_inference": true,
+      "model_family": "TAB",
+      "diagnostic_shadow_only": true
+    }
+  ],
+  "forbidden_current_batch_topk": false,
+  "rank_in_batch_diagnostic_only": true
+}

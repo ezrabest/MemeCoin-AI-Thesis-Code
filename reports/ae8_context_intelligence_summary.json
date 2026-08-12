@@ -1,0 +1,127 @@
+{
+  "final_status": "AE8_CONTEXT_LAYER_PARTIAL_LOCAL_ONLY",
+  "blocking_reasons": [],
+  "context_records_created": 50,
+  "context_schema_id": "7105fd1d8cb8a4fff0d197e51b0310d075879b2f41934772d8096f380697d53f",
+  "source_status_distribution": {
+    "SOURCE_EMPTY": 50,
+    "SOURCE_NOT_AVAILABLE": 50,
+    "SOURCE_OK": 146,
+    "SOURCE_STALE": 4
+  },
+  "feature_family_availability": {
+    "rss": {
+      "present_records": 0,
+      "missing_records": 50
+    },
+    "onchain": {
+      "present_records": 0,
+      "missing_records": 50
+    },
+    "whale": {
+      "present_records": 46,
+      "missing_records": 4
+    },
+    "reputation": {
+      "present_records": 50,
+      "missing_records": 0
+    },
+    "liquidity_activity": {
+      "present_records": 50,
+      "missing_records": 0
+    }
+  },
+  "missing_context_families": [
+    "onchain",
+    "rss",
+    "whale"
+  ],
+  "stale_context_families": [
+    "whale"
+  ],
+  "missingness_rate": 0.416,
+  "total_context_features_per_record": 63,
+  "recommended_next_phase": "AE9_QWEN_GEMINI_AUDIT_LAYER",
+  "runtime_inference_status": "BLOCKED_NOT_APPROVED",
+  "trading_authorization_status": "NOT_APPROVED",
+  "freshness_summary": {
+    "freshness_mode": "LIVE_OR_CURRENT_RUNTIME",
+    "run_started_at_utc": "2026-07-11T09:01:21.287508+00:00",
+    "stale_source_count": 32,
+    "stale_feature_count": 104,
+    "source_freshness_thresholds": {
+      "market_snapshot": 15.0,
+      "liquidity_activity": 15.0,
+      "raw_provider_payloads": 15.0,
+      "onchain": 15.0,
+      "whale": 15.0,
+      "reputation": 1440.0,
+      "rss": 360.0,
+      "rss_article_window": 1440.0
+    },
+    "stale_values_nulled_or_marked_missing": true
+  },
+  "lineage_summary": {
+    "lineage_mode_distribution": {
+      "BEST_EFFORT_IMPLICIT_LINKAGE": 50
+    },
+    "lineage_strength_distribution": {
+      "WEAK_IMPLICIT_TIME_PAIR_LINKS": 50
+    },
+    "lineage_validation_status_distribution": {
+      "PASS_WEAK_BEST_EFFORT_WITH_WARNING": 50
+    },
+    "lineage_confidence_score_distribution": {
+      "min": 0.35,
+      "max": 0.35,
+      "mean": 0.35
+    },
+    "records_missing_lineage_warning": 0,
+    "fallback_count": 50
+  },
+  "memory_safety_summary": {
+    "rows_scanned_by_table": {
+      "signals": 50,
+      "market_snapshots": 138,
+      "raw_provider_payloads": 50,
+      "sentiment_records": 0,
+      "whale_alerts": 1050
+    },
+    "rows_loaded_by_table": {
+      "signals": 50,
+      "market_snapshots": 138,
+      "raw_provider_payloads": 50,
+      "sentiment_records": 0,
+      "whale_alerts": 1050
+    },
+    "max_records_enforced": 50,
+    "lookback_hours_enforced": 1.0,
+    "memory_safety_status": "PASS_BOUNDED_QUERIES",
+    "full_table_market_snapshots_load": false,
+    "bounded_query_count": 301
+  },
+  "external_call_status": {
+    "external_fetch_enabled": false,
+    "external_calls_made": 0,
+    "credentials_required": [
+      "HELIUS_API_KEY"
+    ],
+    "credentials_missing": [],
+    "default_external_fetch_disabled": true
+  },
+  "forbidden_feature_status": {
+    "rejected_count": 2,
+    "rejected_features": [
+      {
+        "feature_name": "target_label_future_outcome_test",
+        "reason": "forbidden_pattern_match"
+      },
+      {
+        "feature_name": "future_return_proxy",
+        "reason": "forbidden_pattern_match"
+      }
+    ],
+    "schema_rejected_count": 0,
+    "status": "PASS"
+  }
+}

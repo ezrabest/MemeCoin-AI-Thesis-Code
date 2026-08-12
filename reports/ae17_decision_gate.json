@@ -1,0 +1,85 @@
+{
+  "phase": "AE17",
+  "classification": "AE17_META_STACKING_LAYER_PASS_WITH_LIMITATIONS",
+  "created_at_utc": "2026-08-01T13:19:30.302176+00:00",
+  "meta_engine_version": "ae17_meta_stacking_v1",
+  "output_root": "C:/Users/Shake/AppData/Local/Temp/tmp4uf60ntj/ae17_out",
+  "ae16_root": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z",
+  "ae16_consensus_artifact": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z/data/rf_xgb_tab16_consensus_preview.csv",
+  "ae16_evidence_artifact": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z/data/rf_xgb_tab16_current_model_evidence.csv",
+  "input_rows_consumed": 45,
+  "meta_feature_rows_produced": 45,
+  "meta_shadow_outputs_produced": 45,
+  "context_availability": {
+    "context_feature_available_any": false,
+    "context_status": "AE17_CONTEXT_NOT_AVAILABLE_PENDING_AE18",
+    "context_missingness_reason": "AE18_NOT_IMPLEMENTED_OR_NO_CONTEXT_ATTACHED"
+  },
+  "pair_concentration": {
+    "top_pair": "gmadnmwstywjaxvbjjthnmcwaku6cn5hhtwwyezt4odo",
+    "top_pair_share": 0.022222222222222223,
+    "hhi": 0.022222222222222244,
+    "concentration_status": [
+      "PAIR_CONCENTRATION_OK",
+      "HHI_LOW_CONCENTRATION"
+    ],
+    "meta_authority_allowed": true,
+    "limitation_recorded": false
+  },
+  "score_clamping": {
+    "rows_clamped": 0,
+    "rows_null_score": 4
+  },
+  "null_safety_passed": true,
+  "no_lookahead_passed": true,
+  "feature_parity_passed": true,
+  "lineage_passed": true,
+  "authority_passed": true,
+  "trade_authority": false,
+  "live_trading_ready": false,
+  "paper_demo_only": true,
+  "risk_override_authority": false,
+  "training_performed": false,
+  "fit_called": false,
+  "sklearn_xgboost_tabicl_training_imports": false,
+  "db_mutated": false,
+  "ae18_status": "BLOCKED",
+  "ae19_status": "BLOCKED",
+  "checklist": {
+    "AE17-01_meta_substrate_exists": true,
+    "AE17-02_consumes_rf_xgb_tab_consensus_context": true,
+    "AE17-03_feature_parity_and_no_lookahead": true,
+    "AE17-04_lineage_preserved": true,
+    "AE17-05_pair_concentration_numeric": true,
+    "AE17-06_authority_boundary_enforced": true
+  },
+  "reasons": [
+    "majority_lineage_incomplete_surrogate_ids",
+    "context_not_available_pending_ae18"
+  ],
+  "decision": {
+    "classification": "AE17_META_STACKING_LAYER_PASS_WITH_LIMITATIONS",
+    "meta_authority_allowed": false,
+    "ae18_status": "BLOCKED",
+    "ae19_status": "BLOCKED",
+    "reasons": [
+      "majority_lineage_incomplete_surrogate_ids",
+      "context_not_available_pending_ae18"
+    ],
+    "checklist": {
+      "AE17-01_meta_substrate_exists": true,
+      "AE17-02_consumes_rf_xgb_tab_consensus_context": true,
+      "AE17-03_feature_parity_and_no_lookahead": true,
+      "AE17-04_lineage_preserved": true,
+      "AE17-05_pair_concentration_numeric": true,
+      "AE17-06_authority_boundary_enforced": true
+    },
+    "concentration_limitation": false,
+    "notes": [
+      "Deterministic rule-based meta shadow only; no second-stage ML training.",
+      "Context Intelligence remains AE18.",
+      "LLM Operational Layer remains AE19.",
+      "Concentration within numeric thresholds or sample warnings only."
+    ]
+  }
+}

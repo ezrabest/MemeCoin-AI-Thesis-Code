@@ -1,0 +1,62 @@
+System tests data collection QWEN3
+
+Write-Host "`n===== 1. LIVE API STATUS =====" -ForegroundColor Cyan
+$r = Invoke-RestMethod http://localhost:8080/api/debug/collection
+
+Write-Host "`n===== 2. LLM RUNTIME =====" -ForegroundColor Cyan
+$r.llm_runtime | Format-List
+
+Write-Host "`n===== 3. STORAGE COUNTS =====" -ForegroundColor Cyan
+$r.storage.market_snapshots
+$r.storage.raw_provider_payloads
+$r.storage.signals
+$r.storage.whale_alerts
+$r.storage.gemini_decisions
+$r.storage.sentiment_records
+$r.storage.paper_trades
+
+Write-Host "`n===== 4. FULL DEBUG JSON =====" -ForegroundColor Cyan
+$r | ConvertTo-Json -Depth 10
+
+Write-Host "`n===== 5. INSPECT STORAGE SCRIPT =====" -ForegroundColor Cyan
+python scripts/inspect_storage.py
+
+Write-Host "`n===== 6. DATA FOLDER SIZE =====" -ForegroundColor Cyan
+"{0:N2} GB" -f ((dir data -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum / 1GB)
+
+Write-Host "`n===== 7. DATABASE FILE SIZES =====" -ForegroundColor Cyan
+dir -Recurse *.db,*.sqlite,*.duckdb -ErrorAction SilentlyContinue | Select-Object FullName, @{Name="GB";Expression={"{0:N3}" -f ($_.Length/1GB)}}
+
+Write-Host "`n===== 8. HEALTH CHECK =====" -ForegroundColor Cyan
+try {
+    $health = Invoke-WebRequest http://localhost:8080/api/debug/collection
+    Write-Host "API StatusCode:" $health.StatusCode
+} catch {
+    Write-Host "API ERROR:" $_.Exception.Message -ForegroundColor Red
+}
+
+Write-Host "`n===== DONE =====" -ForegroundColor Green
+
+
+CLEAN RUN ----------
+
+$env:CLEAN_FORWARD_USE_CURATED_TARGETS = "true"
+$env:CLEAN_FORWARD_CURATED_TARGETS_PATH = "data\SeedTargets\clean_forward_curated_ready_targets_active.csv"
+
+python main.py --mode ollama
+
+
+-----------------------------
+
+
+
+
+$r = Invoke-RestMethod http://localhost:8080/api/debug/collection
+$r.llm_runtime
+$r.storage.market_snapshots
+$r.storage.raw_provider_payloads
+$r.storage.signals
+$r.storage.whale_alerts
+$r.storage.gemini_decisions
+python scripts/inspect_storage.py
+"{0:N2} GB" -f ((dir data -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum / 1GB)

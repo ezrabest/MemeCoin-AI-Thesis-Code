@@ -1,0 +1,203 @@
+{
+  "phase": "AE16F_SERVING_SAFE_DIRECT_TARGET_MODEL_EVIDENCE",
+  "timestamp": "20260723_170902",
+  "generated_at_utc": "2026-07-23T17:10:38.758570+00:00",
+  "output_root": "data/audits/ae16f_serving_safe_model_evidence_20260723_170902",
+  "active_curated_targets": 45,
+  "current_clean_forward_rows_used": 42,
+  "toxic_pair_present_anywhere": false,
+  "selected_training_source": "data/training/manual_verified_datasets_direct_target_v1/LIQ_5K_HIGH_ACTIVITY_1h_TP20308_SL075_FEE0308_TIME_BY_HORIZON_DIRECT_TARGET_v1.parquet",
+  "selected_target_column": "target",
+  "selected_horizon": "1h",
+  "serving_safe_feature_count": 26,
+  "serving_safe_feature_names": [
+    "tp_ratio",
+    "sl_ratio",
+    "round_trip_fee_pct",
+    "time_stop_minutes",
+    "price",
+    "liquidity",
+    "volume_24h",
+    "fdv",
+    "txns_buys",
+    "txns_sells",
+    "txns_total",
+    "price_change_m5",
+    "price_change_h1",
+    "price_change_h6",
+    "price_change_h24",
+    "buy_ratio",
+    "price_usd",
+    "liquidity_usd",
+    "volume_to_liquidity_ratio",
+    "fdv_is_missing",
+    "txns_buys_is_missing",
+    "txns_sells_is_missing",
+    "price_change_m5_is_missing",
+    "price_change_h1_is_missing",
+    "price_change_h6_is_missing",
+    "price_change_h24_is_missing"
+  ],
+  "forbidden_features_excluded": [
+    "candidate_id",
+    "entry_price",
+    "entry_price_raw",
+    "entry_price_verified_1h",
+    "entry_price_verified_24h",
+    "entry_price_verified_30m",
+    "entry_price_verified_4h",
+    "entry_price_verified_8h",
+    "entry_snapshot_id",
+    "future_snapshot_count",
+    "gap_detected",
+    "is_extreme_step_ratio_100x",
+    "label_valid",
+    "liquidity_delta",
+    "max_future_ratio",
+    "min_future_ratio",
+    "pair_address",
+    "previous_liquidity_usd",
+    "previous_price_usd",
+    "price_delta",
+    "price_step_ratio_prev",
+    "sim_exit_status",
+    "sim_net_return",
+    "symbol",
+    "target",
+    "target_net_profitable_after_exit",
+    "whale_score"
+  ],
+  "feature_schema_hash": "0f2cbb980390db0ef702cfe2f4e995ed6f0644a207110dffc886aec56980f7be",
+  "exact_schema_alignment_passed": true,
+  "schema_alignment_error_count": 0,
+  "historical_current_column_order_identical": true,
+  "historical_current_dtypes_identical": true,
+  "historical_matrix_rows": 73798,
+  "current_matrix_rows": 42,
+  "split_method": "historical_split_column",
+  "train_rows": 51589,
+  "validation_rows": 11282,
+  "test_rows": 10927,
+  "no_lookahead_passed": true,
+  "pair_concentration_summary": [
+    {
+      "split": "train",
+      "pair_address": "0xA43fe16908251ee70EF74718545e4FE6C5cCEc9f",
+      "count": 8434,
+      "share": 0.163484
+    },
+    {
+      "split": "train",
+      "pair_address": "0xce6160bB594fC055c943F59De92ceE30b8c6B32c",
+      "count": 8433,
+      "share": 0.163465
+    },
+    {
+      "split": "train",
+      "pair_address": "9DEWXPxzbJgsQb5nAPkVHpaxQSZUCevoR5dY4WKVLCw6",
+      "count": 6328,
+      "share": 0.122662
+    },
+    {
+      "split": "train",
+      "pair_address": "0xac109C8025F272414fd9e2faA805a583708A017f",
+      "count": 5997,
+      "share": 0.116246
+    },
+    {
+      "split": "train",
+      "pair_address": "0x353d328eFbEf48b79a570cBc2fdE20F40e9f2063",
+      "count": 5619,
+      "share": 0.108919
+    },
+    {
+      "split": "validation",
+      "pair_address": "0xac109C8025F272414fd9e2faA805a583708A017f",
+      "count": 2110,
+      "share": 0.187024
+    },
+    {
+      "split": "validation",
+      "pair_address": "0xA43fe16908251ee70EF74718545e4FE6C5cCEc9f",
+      "count": 2109,
+      "share": 0.186935
+    },
+    {
+      "split": "validation",
+      "pair_address": "0xce6160bB594fC055c943F59De92ceE30b8c6B32c",
+      "count": 2109,
+      "share": 0.186935
+    },
+    {
+      "split": "validation",
+      "pair_address": "0x353d328eFbEf48b79a570cBc2fdE20F40e9f2063",
+      "count": 2060,
+      "share": 0.182592
+    },
+    {
+      "split": "validation",
+      "pair_address": "9DEWXPxzbJgsQb5nAPkVHpaxQSZUCevoR5dY4WKVLCw6",
+      "count": 1827,
+      "share": 0.161939
+    }
+  ],
+  "rf_trained": true,
+  "xgb_trained": true,
+  "tab_run": true,
+  "rf_evidence_rows": 42,
+  "xgb_evidence_rows": 42,
+  "tab_evidence_rows": 42,
+  "unavailable_model_families": [],
+  "vote_thresholds": [
+    {
+      "threshold_method": "validation_top_pct_quantile",
+      "threshold_value": 0.6608411682788434,
+      "threshold_source": "historical_validation_predictions_top_5pct",
+      "validation_rows_used_for_threshold": 11282,
+      "current_rows_used_for_threshold": false,
+      "threshold_selected_before_current_inference": true,
+      "model_family": "RF",
+      "diagnostic_shadow_only": true
+    },
+    {
+      "threshold_method": "validation_top_pct_quantile",
+      "threshold_value": 0.9882992506027222,
+      "threshold_source": "historical_validation_predictions_top_5pct",
+      "validation_rows_used_for_threshold": 11282,
+      "current_rows_used_for_threshold": false,
+      "threshold_selected_before_current_inference": true,
+      "model_family": "XGB",
+      "diagnostic_shadow_only": true
+    },
+    {
+      "threshold_method": "validation_top_pct_quantile",
+      "threshold_value": 0.8232953548431396,
+      "threshold_source": "historical_validation_predictions_top_5pct",
+      "validation_rows_used_for_threshold": 11282,
+      "current_rows_used_for_threshold": false,
+      "threshold_selected_before_current_inference": true,
+      "model_family": "TAB",
+      "diagnostic_shadow_only": true
+    }
+  ],
+  "threshold_integrity_passed": true,
+  "current_rows_used_for_threshold": false,
+  "consensus_rows": 42,
+  "tier_counts": {
+    "MODEL_EVIDENCE_UNAVAILABLE": 41,
+    "SINGLE_MODEL_ONLY": 1
+  },
+  "tab_xgb_rf_all3_count": 0,
+  "tab_rf_only_count": 0,
+  "model_evidence_unavailable_count": 41,
+  "trader_db_mutated": false,
+  "wallet_connected": false,
+  "live_trading_enabled": false,
+  "model_training_run": true,
+  "backtest_run": false,
+  "ae17_started": false,
+  "ae16_original_e6_closed": false,
+  "classification": "AE16F_SERVING_SAFE_MODEL_EVIDENCE_PASS",
+  "training_error": "",
+  "consensus_error": ""
+}

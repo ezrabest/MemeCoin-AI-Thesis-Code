@@ -1,0 +1,42 @@
+flowchart TD
+  subgraph Inputs["Model & policy inputs"]
+    SX["score_xgb"]
+    ST["score_tab"]
+    SR["score_rf"]
+    POL["filter / horizon / pair_cap / TP / SL"]
+  end
+
+  subgraph Labels["Historical labels"]
+    X2["x2 return target\n(legacy, useful but insufficient)"]
+    DT["direct target:\nnet_profitable_after_exit_policy"]
+  end
+
+  subgraph Build["Dataset construction"]
+    SEL["Selected-trade decomposition\n(Phase B V5.1)"]
+    EXIT["Exit replay with fees"]
+    ROWS["Direct-target labeled rows"]
+  end
+
+  subgraph Train["Recommended training order"]
+    T1["E4: XGB direct target"]
+    T2["E4: RF direct target"]
+    T3["E5: TAB direct target"]
+    T4["E6: Tiered consensus rerun"]
+    T5["E7: Meta-model / stacking"]
+  end
+
+  Inputs --> SEL
+  X2 --> SEL
+  SEL --> EXIT
+  EXIT --> DT
+  DT --> ROWS
+  ROWS --> T1
+  T1 --> T2
+  T2 --> T3
+  T3 --> T4
+  T4 --> T5
+
+  SX --> T5
+  ST --> T5
+  SR --> T5
+  POL --> T5

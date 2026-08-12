@@ -1,0 +1,9 @@
+flowchart TD
+    A["Raw audit payload / stored reason field"] --> B["Parse with json.loads or typed parser"]
+    B --> C{"Parsed type valid?"}
+    C -- "list[str] / list[dict] / expected schema" --> D["Normalize reason codes"]
+    C -- "string / malformed / unknown" --> E["Set AUDIT_PARSE_INVALID flag"]
+    E --> F["Do not iterate characters as reasons"]
+    D --> G["Sanitized audit reasons"]
+    F --> G
+    G --> H["Decision trace / JSONL audit / UI reason panel"]

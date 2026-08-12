@@ -1,0 +1,8 @@
+{
+  "threshold": 0.9928224834607726,
+  "threshold_policy": "historical_validation_top_5pct_quantile",
+  "validation_rows_used": 11282,
+  "current_selected_rows_used_for_threshold": false,
+  "current_selected_rows_used_for_training": false,
+  "passed": true
+}

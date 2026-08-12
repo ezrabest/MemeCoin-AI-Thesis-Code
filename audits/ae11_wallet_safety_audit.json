@@ -1,0 +1,7 @@
+{
+  "wallet_configured": false,
+  "private_key_accessed": false,
+  "real_transaction_attempted": false,
+  "live_submission_status": "NOT_SUBMITTED_NO_WALLET",
+  "no_real_wallet_path": true
+}

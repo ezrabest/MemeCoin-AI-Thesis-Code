@@ -1,0 +1,41 @@
+{
+  "phase": "AE16E_DIRECT_TARGET_MODEL_EVIDENCE_ATTACHMENT",
+  "classification": "AE16E_BLOCKED_FEATURE_PARITY_GAP",
+  "status": "BLOCKED",
+  "ae16_original_e6_closed": false,
+  "safe_to_start_ae17": false,
+  "blockers": [
+    "AE16E_BLOCKED_FEATURE_PARITY_GAP",
+    "FEATURE_PARITY_NOT_APPROVED:whale_score|price_step_ratio_prev|entry_price_verified_30m|entry_price_verified_1h|entry_price_verified_4h|entry_price_verified_8h|entry_price_verified_24h|entry_price_raw|entry_price|entry_snapshot_id|is_extreme_step_ratio_100x|gap_detected",
+    "NO_SAFE_CLEAN_FORWARD_TAB_JOBLIB: TabICL has preprocessing schema but no local CF-compatible joblib/pt inference artifact"
+  ],
+  "rf_missing_blocking": [
+    "whale_score",
+    "price_step_ratio_prev",
+    "entry_price_verified_30m",
+    "entry_price_verified_1h",
+    "entry_price_verified_4h",
+    "entry_price_verified_8h",
+    "entry_price_verified_24h",
+    "entry_price_raw",
+    "entry_price",
+    "entry_snapshot_id",
+    "is_extreme_step_ratio_100x",
+    "gap_detected"
+  ],
+  "xgb_missing_blocking": [
+    "whale_score",
+    "price_step_ratio_prev",
+    "entry_price_verified_30m",
+    "entry_price_verified_1h",
+    "entry_price_verified_4h",
+    "entry_price_verified_8h",
+    "entry_price_verified_24h",
+    "entry_price_raw",
+    "entry_price",
+    "entry_snapshot_id",
+    "is_extreme_step_ratio_100x",
+    "gap_detected"
+  ],
+  "tab_blocker": "NO_SAFE_CLEAN_FORWARD_TAB_JOBLIB: TabICL has preprocessing schema but no local CF-compatible joblib/pt inference artifact"
+}

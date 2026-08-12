@@ -1,0 +1,40 @@
+flowchart TD
+    subgraph Gates["Numeric gates (must pass first)"]
+        M["XGB / TAB / RF scores"]
+        P["Policy / economic gate"]
+    end
+
+    subgraph Qwen["Qwen / Ollama — local operational reasoning"]
+        MEMO["Candidate memo"]
+        SUM["Sentiment / context summary"]
+        RISK["Risk explainer / soft veto"]
+        RC["Reason codes"]
+    end
+
+    subgraph Gemini["Gemini — selective external audit"]
+        FP["False-positive review"]
+        SCAM["Scam / reputation deep-dive"]
+        BENCH["Periodic Qwen benchmark"]
+    end
+
+    subgraph Audit["Audit outputs"]
+        SAN["Audit reason sanitization"]
+        TRACE["Decision trace / JSONL"]
+        UI["UI reason panel"]
+    end
+
+    M --> P
+    P --> MEMO
+    MEMO --> SUM
+    SUM --> RISK
+    RISK --> RC
+
+    RC --> GEM
+    GEM -- "selective only" --> FP
+    GEM --> SCAM
+    GEM --> BENCH
+
+    RC --> SAN
+    FP --> SAN
+    SAN --> TRACE
+    TRACE --> UI

@@ -1,0 +1,121 @@
+{
+  "phase": "AE16_TAB16_DIRECT_TARGET_SERVING_SAFE",
+  "gate_status": "PASS",
+  "ae16_closed": false,
+  "profitability_claimed": false,
+  "checks": [
+    {
+      "name": "tab16_artifact_exists",
+      "passed": true
+    },
+    {
+      "name": "no_alias_ae16f_tab_serving_safe",
+      "passed": true
+    },
+    {
+      "name": "exactly_26_features",
+      "passed": true
+    },
+    {
+      "name": "feature_order_enforced",
+      "passed": true
+    },
+    {
+      "name": "feature_set_hash_present",
+      "passed": true
+    },
+    {
+      "name": "ordered_feature_schema_hash_present",
+      "passed": true
+    },
+    {
+      "name": "legacy_tab_used_false",
+      "passed": true
+    },
+    {
+      "name": "legacy_isolation_passed",
+      "passed": true
+    },
+    {
+      "name": "forbidden_feature_audit_passed",
+      "passed": true
+    },
+    {
+      "name": "lookahead_audit_passed",
+      "passed": true
+    },
+    {
+      "name": "threshold_from_historical_validation_only",
+      "passed": true
+    },
+    {
+      "name": "registry_exists",
+      "passed": true
+    },
+    {
+      "name": "registry_maps_tab16",
+      "passed": true
+    },
+    {
+      "name": "registry_enforcement_passed",
+      "passed": true
+    },
+    {
+      "name": "rf_scored_l1",
+      "passed": true
+    },
+    {
+      "name": "xgb_scored_l1",
+      "passed": true
+    },
+    {
+      "name": "tab16_scored_l1",
+      "passed": true
+    },
+    {
+      "name": "consensus_legacy_flag_false",
+      "passed": true
+    },
+    {
+      "name": "no_db_mutation",
+      "passed": true
+    },
+    {
+      "name": "no_ae17",
+      "passed": true
+    },
+    {
+      "name": "no_llm",
+      "passed": true
+    },
+    {
+      "name": "no_backtest",
+      "passed": true
+    },
+    {
+      "name": "no_wallet",
+      "passed": true
+    },
+    {
+      "name": "no_live_trading",
+      "passed": true
+    },
+    {
+      "name": "no_profitability_claim",
+      "passed": true
+    },
+    {
+      "name": "ae16_not_auto_closed",
+      "passed": true
+    },
+    {
+      "name": "all_negative_attached_is_reject",
+      "passed": true
+    }
+  ],
+  "created_at_utc": "2026-07-24T20:50:24.146376+00:00",
+  "output_root": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z",
+  "artifact_path": "models/ae16_tab16_direct_target_serving_safe.joblib",
+  "registry_path": "models/ae16_model_registry.json",
+  "note": "Gate PASS resolves TAB16 evidence blocker only; does not close AE16."
+}

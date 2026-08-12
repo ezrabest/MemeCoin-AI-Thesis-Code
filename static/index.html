@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MemeCoin Demo Trader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/product_demo.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #06080f; --surface: #0c1019; --surface2: #121826; --border: #1e2a3d;
+      --text: #e8eef7; --muted: #7a8ba3; --accent: #3b82f6; --accent2: #22d3ee;
+      --green: #34d399; --red: #f87171; --amber: #fbbf24; --social: #34d399; --spec: #f472b6;
+      --shadow: 0 8px 32px rgba(0,0,0,.45); --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Outfit", system-ui, sans-serif; background: var(--bg); color: var(--text);
+      min-height: 100vh;
+      background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59,130,246,.15), transparent);
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1rem; border-bottom: 1px solid var(--border);
+      background: rgba(12,16,25,.95); backdrop-filter: blur(12px);
+      /* AE13C: do not sticky-cover the tab bar (was intercepting nav clicks) */
+      position: relative; z-index: 40;
+    }
+    .logo { display: flex; align-items: center; gap: .75rem; font-weight: 700; font-size: 1.05rem; }
+    .logo span { color: var(--accent2); }
+    .badge {
+      font-family: "JetBrains Mono", monospace; font-size: .65rem; padding: .2rem .5rem;
+      border-radius: 4px; background: rgba(59,130,246,.2); color: var(--accent2);
+      border: 1px solid rgba(59,130,246,.35);
+    }
+    .mode-pill {
+      font-size: .7rem; font-weight: 700; padding: .25rem .6rem; border-radius: 999px;
+      background: rgba(52,211,153,.15); color: var(--green); border: 1px solid rgba(52,211,153,.4);
+    }
+    .mode-pill.live { background: rgba(248,113,113,.15); color: var(--red); border-color: rgba(248,113,113,.4); }
+    .btn {
+      font-family: inherit; font-size: .8rem; font-weight: 600; padding: .5rem 1rem;
+      border-radius: 8px; border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text); cursor: pointer; transition: .15s;
+    }
+    .btn:hover { border-color: var(--accent); background: rgba(59,130,246,.1); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), #2563eb); border-color: transparent; color: #fff; }
+    .mode-btn.active { border-color: var(--accent2); background: rgba(34,211,238,.15); color: var(--accent2); }
+    .mode-btn.live-active { border-color: var(--red); background: rgba(248,113,113,.12); color: var(--red); }
+    .btn-sell { border-color: var(--red); color: var(--red); }
+    .btn-sell:hover { background: rgba(248,113,113,.12); }
+    .btn-sm { padding: .35rem .7rem; font-size: .75rem; }
+    nav.tabs {
+      display: flex; gap: .25rem; padding: .75rem 1rem 0; border-bottom: 1px solid var(--border);
+      background: rgba(12,16,25,.96); overflow-x: auto;
+      /* Keep product tabs reachable while scrolling */
+      position: sticky; top: 0; z-index: 60;
+      box-shadow: 0 1px 0 var(--border);
+    }
+    nav.tabs button {
+      font-family: inherit; font-size: .8rem; font-weight: 600; padding: .65rem 1.1rem;
+      border: none; background: transparent; color: var(--muted); cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
+    }
+    nav.tabs button.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+    main { width: 100%; max-width: 95vw; margin: 0 auto; padding: 1.25rem 1rem 6rem; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .75rem; margin-bottom: 1.25rem; }
+    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .9rem; }
+    .stat label { display: block; font-size: .65rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: .3rem; }
+    .stat .val { font-size: 1.2rem; font-weight: 700; font-family: "JetBrains Mono", monospace; }
+    .grid-2 { display: grid; grid-template-columns: minmax(0, 2.5fr) minmax(280px, 1fr); gap: 1.25rem; width: 100%; }
+    @media (max-width: 1100px) { .grid-2 { grid-template-columns: 1fr; } }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); margin-bottom: 1rem; }
+    .panel-head { display: flex; justify-content: space-between; align-items: center; padding: .85rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface2); }
+    .panel-head h2 { font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+    .panel-head .sub { font-size: .72rem; color: var(--muted); font-weight: 400; }
+    /* CRITICAL: cluster filter chips preserved */
+    .filters { display: flex; gap: .5rem; flex-wrap: wrap; padding: .75rem 1rem; border-bottom: 1px solid var(--border); }
+    .filter-chip {
+      font-size: .75rem; padding: .35rem .75rem; border-radius: 999px;
+      border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer;
+    }
+    .filter-chip:hover, .filter-chip.active { border-color: var(--accent); color: var(--accent2); background: rgba(59,130,246,.1); }
+    .filter-chip.audit.active { border-color: var(--amber); color: var(--amber); background: rgba(251,191,36,.1); }
+    .drop-reason { color: var(--red); font-size: .68rem; max-width: min(320px, 100%); }
+    .watchlist-row-untrusted { opacity: 0.85; border-left: 2px solid var(--amber); }
+    .table-wrap { overflow: auto; max-height: 480px; }
+    .market-table-wrap { overflow-x: auto; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .76rem; }
+    .market-table-wrap table { min-width: 1400px; }
+    th { position: sticky; top: 0; background: var(--surface2); text-align: left; padding: .55rem .7rem;
+      color: var(--muted); font-size: .62rem; text-transform: uppercase; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: .5rem .7rem; border-bottom: 1px solid rgba(30,42,61,.6); }
+    tr:hover td { background: rgba(59,130,246,.04); }
+    .mono { font-family: "JetBrains Mono", monospace; font-size: .7rem; }
+    .addr { max-width: min(180px, 18vw); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--accent2); cursor: pointer; }
+    .cluster { display: inline-block; padding: .15rem .45rem; border-radius: 4px; font-size: .62rem; font-weight: 600; }
+    .cluster.social { background: rgba(52,211,153,.15); color: var(--social); border: 1px solid rgba(52,211,153,.35); }
+    .cluster.spec { background: rgba(244,114,182,.15); color: var(--spec); border: 1px solid rgba(244,114,182,.35); }
+    .score-bar { width: 50px; height: 4px; background: var(--border); border-radius: 2px; display: inline-block; margin-right: 4px; vertical-align: middle; }
+    .score-fill { height: 100%; background: var(--accent2); border-radius: 2px; }
+    .sentiment-list { max-height: 440px; overflow-y: auto; }
+    .sentiment-item { padding: .6rem .85rem; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 1fr auto; gap: .5rem; }
+    .sentiment-score { font-family: "JetBrains Mono", monospace; font-size: .72rem; padding: .15rem .4rem; border-radius: 4px; }
+    .sentiment-score.pos { background: rgba(52,211,153,.15); color: var(--green); }
+    .sentiment-score.neg { background: rgba(248,113,113,.15); color: var(--red); }
+    .sentiment-score.neu { background: rgba(122,139,163,.15); color: var(--muted); }
+    .aggregate { padding: .65rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; display: inline-block; margin-right: 6px; }
+    @keyframes pulse { 50% { opacity: .4; } }
+    .form-grid { display: grid; gap: .85rem; padding: 1rem; max-width: 520px; }
+    .form-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .form-row label { font-size: .8rem; color: var(--muted); }
+    .form-row input, .form-row select, .form-row textarea {
+      width: 160px; padding: .45rem .6rem; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-family: inherit; font-size: .8rem;
+    }
+    .form-row textarea { width: 100%; min-height: 72px; }
+    .toggle { display: flex; align-items: center; gap: .5rem; }
+    .toggle input { width: auto; }
+    .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+    .chart-box { padding: 1rem; height: 280px; }
+    .ae12-banner {
+      margin-bottom: 1rem; padding: .85rem 1rem; border-radius: var(--radius);
+      border: 1px solid rgba(251,191,36,.45); background: rgba(251,191,36,.08);
+      font-size: .78rem; color: var(--amber); line-height: 1.45;
+    }
+    .ae12-banner strong { color: var(--text); }
+    .ae12-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+    .ae12-kv { font-size: .78rem; display: grid; grid-template-columns: 1fr auto; gap: .35rem .75rem; padding: .15rem 0; border-bottom: 1px solid rgba(30,42,61,.5); }
+    .ae12-kv span:last-child { font-family: "JetBrains Mono", monospace; font-size: .72rem; color: var(--accent2); text-align: right; max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
+    .ae12-warn { color: var(--amber); font-size: .72rem; margin-top: .5rem; line-height: 1.4; }
+    .ae12-body { padding: 1rem; font-size: .78rem; color: var(--muted); }
+    .ae12-semantic-section {
+      margin-bottom: 1.25rem; padding: 1rem; border-radius: var(--radius);
+      border: 1px solid rgba(34,211,238,.35); background: rgba(34,211,238,.05);
+    }
+    .ae12-semantic-section h2 {
+      font-size: .85rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+      color: var(--accent2); margin-bottom: .35rem;
+    }
+    .ae12-semantic-meta { font-size: .72rem; color: var(--muted); line-height: 1.45; margin-bottom: .75rem; }
+    .ae12-semantic-meta .gate { color: var(--amber); font-weight: 600; }
+    .ae12-semantic-cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .65rem;
+    }
+    .ae12-sem-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .75rem;
+    }
+    .ae12-sem-card label {
+      display: block; font-size: .62rem; text-transform: uppercase; letter-spacing: .05em;
+      color: var(--muted); margin-bottom: .25rem;
+    }
+    .ae12-sem-card .val { font-size: 1.15rem; font-weight: 700; font-family: "JetBrains Mono", monospace; }
+    .ae12-sem-card.social-card { border-color: rgba(52,211,153,.4); }
+    .ae12-sem-card.social-card .val { color: var(--social); }
+    .ae12-sem-card.opp-confirmed-card { border-color: rgba(244,114,182,.4); }
+    .ae12-sem-card.opp-confirmed-card .val { color: var(--spec); }
+    .ae12-sem-card.op-suspected-card {
+      border-color: rgba(251,146,60,.55); background: rgba(251,146,60,.08);
+    }
+    .ae12-sem-card.op-suspected-card .val { color: #fb923c; }
+    .ae12-sem-card.op-suspected-card label { color: #fdba74; }
+    .ae12-sem-card.unknown-unresolved-card {
+      border-color: rgba(251,191,36,.55); background: rgba(251,191,36,.1);
+    }
+    .ae12-sem-card.unknown-unresolved-card .val { color: var(--amber); }
+    .ae12-sem-card.unknown-unresolved-card label { color: #fcd34d; }
+    .ae12-sem-card.unique-coins-card { border-color: rgba(34,211,238,.35); }
+    .ae12-sem-card.unique-coins-card .val { color: var(--accent2); }
+    .ae12-sem-card.infra-card .val { color: var(--muted); }
+    .ae12-sem-card.manual-remaining-card .val { color: var(--muted); }
+    .ae12-sem-unavailable {
+      padding: .85rem; border-radius: 8px; border: 1px dashed rgba(251,191,36,.5);
+      color: var(--amber); font-size: .78rem; line-height: 1.4; display: none;
+    }
+    .legacy-diag-stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .65rem;
+      margin: .5rem 0 1rem; opacity: .85;
+    }
+    .legacy-diag-stats .stat { border-style: dashed; }
+    .legacy-diag-stats .stat label { color: var(--amber); }
+    .wallet-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .75rem; padding: 1rem; }
+    .wallet-card { padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface2); }
+    .empty { padding: 2rem; text-align: center; color: var(--muted); font-size: .85rem; }
+    #chat-toggle {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; width: 56px; height: 56px; border-radius: 50%;
+      border: none; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff;
+      font-size: 1.35rem; cursor: pointer; z-index: 200; box-shadow: 0 8px 24px rgba(59,130,246,.45);
+    }
+    #chat-panel {
+      position: fixed; bottom: 5.5rem; right: 1.5rem; width: 400px; max-width: calc(100vw - 2rem);
+      height: 500px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      z-index: 199; display: none; flex-direction: column; box-shadow: var(--shadow);
+    }
+    #chat-panel.open { display: flex; }
+    .chat-header { padding: .85rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface2); }
+    #chat-messages { flex: 1; overflow-y: auto; padding: .75rem; display: flex; flex-direction: column; gap: .5rem; }
+    .msg { max-width: 90%; padding: .55rem .75rem; border-radius: 10px; font-size: .8rem; line-height: 1.4; white-space: pre-wrap; }
+    .msg.user { align-self: flex-end; background: rgba(59,130,246,.25); border: 1px solid rgba(59,130,246,.4); }
+    .msg.bot { align-self: flex-start; background: var(--surface2); border: 1px solid var(--border); }
+    .msg.system { align-self: center; font-size: .68rem; color: var(--muted); }
+    .chat-input-row { display: flex; gap: .5rem; padding: .75rem; border-top: 1px solid var(--border); }
+    #chat-input { flex: 1; padding: .5rem .7rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+    #toast {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(60px);
+      background: var(--surface2); border: 1px solid var(--border); padding: .55rem 1rem; border-radius: 8px;
+      font-size: .8rem; opacity: 0; transition: .3s; z-index: 300;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .sc-meta { font-size: .72rem; color: var(--muted); font-family: "JetBrains Mono", monospace; padding: .75rem 1rem 0; }
+    .sc-warnings { margin: .75rem 1rem; padding: .65rem .85rem; background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.35); border-radius: 8px; font-size: .78rem; color: var(--amber); }
+    .sc-top-error { margin: .5rem 1rem; padding: .55rem .75rem; background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.35); border-radius: 8px; color: var(--red); font-size: .78rem; display: none; }
+    .sc-toolbar { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; padding: .75rem 1rem; border-top: 1px solid var(--border); }
+    .sc-dirty { font-size: .75rem; font-weight: 600; margin-left: auto; }
+    .sc-saving { font-size: .72rem; color: var(--muted); }
+    .sc-group { padding: 1rem; border-bottom: 1px solid var(--border); }
+    .sc-group h3 { font-size: .82rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .65rem; color: var(--accent2); }
+    .sc-note { font-size: .75rem; color: var(--muted); margin-bottom: .65rem; line-height: 1.4; }
+    .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: .65rem 1rem; }
+    .sc-field label { display: block; font-size: .75rem; color: var(--muted); margin-bottom: .25rem; }
+    .sc-field input, .sc-field select { width: 100%; max-width: 220px; padding: .45rem .6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: .8rem; }
+    .sc-field input.sc-readonly, .sc-field input:disabled { opacity: .7; background: var(--surface2); }
+    .sc-field input.sc-invalid, .sc-field select.sc-invalid { border-color: var(--red); box-shadow: 0 0 0 1px rgba(248,113,113,.35); }
+    .sc-field-error { color: var(--red); font-size: .68rem; margin-top: .2rem; display: none; }
+    .sc-inspector-wrap { overflow: auto; max-height: 420px; }
+    .sc-inspector-wrap table { min-width: 1200px; font-size: .68rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      MemeCoin <span>Demo Trader</span>
+      <span class="badge" id="model-badge">paper / demo</span>
+      <span class="mode-pill" id="mode-pill">DEMO</span>
+    </div>
+    <div style="display:flex;gap:.5rem;align-items:center;">
+      <span class="mono" style="font-size:.72rem;color:var(--muted);" id="last-refresh">-</span>
+      <button class="btn" onclick="refreshDashboard()">↻ Refresh</button>
+    </div>
+  </header>
+
+  <nav class="tabs nav-product" role="tablist">
+    <button class="active" data-tab="demo" type="button">Demo Trading</button>
+    <button data-tab="clean-forward" type="button">Clean Forward Market Feed</button>
+    <button data-tab="live-market" type="button">Market Snapshot Feed</button>
+    <button data-tab="portfolio" type="button">Portfolio</button>
+    <button data-tab="market" type="button">Market Opportunities</button>
+    <button data-tab="insights" type="button">AI Insights</button>
+    <button data-tab="settings" type="button">Settings</button>
+    <button data-tab="vault" type="button">Research Evidence / Audit Vault</button>
+  </nav>
+
+  <main>
+    <!-- PRODUCT: Demo Trading -->
+    <div id="tab-demo" class="tab-panel active">
+      <div class="safety-strip">
+        <span><strong>Demo Mode:</strong> Active</span>
+        <span><strong>Live Trading:</strong> Disabled</span>
+        <span><strong>Wallet:</strong> Not connected</span>
+        <span>Paper/demo only - not profitability evidence</span>
+      </div>
+      <div class="product-hero-stats">
+        <div class="stat"><label>Demo Bot</label><div class="val" id="pd-bot-status">Stopped</div></div>
+        <div class="stat"><label>Demo Mode</label><div class="val" id="pd-demo-mode">Active</div></div>
+        <div class="stat"><label>Live Trading</label><div class="val" id="pd-live-trading">Disabled</div></div>
+        <div class="stat"><label>Wallet</label><div class="val" id="pd-wallet">Not connected</div></div>
+        <div class="stat"><label>Demo Balance</label><div class="val" id="pd-balance">-</div></div>
+        <div class="stat"><label>Open Positions</label><div class="val" id="pd-open">-</div></div>
+        <div class="stat"><label>Cycles (session)</label><div class="val" id="pd-cycles">-</div></div>
+        <div class="stat"><label>Trade Attempts</label><div class="val" id="pd-attempts">-</div></div>
+        <div class="stat"><label>Opened / Closed</label><div class="val" id="pd-trades-today">-</div></div>
+        <div class="stat"><label>Last Cycle</label><div class="val" id="pd-last-cycle" style="font-size:.85rem">-</div></div>
+        <div class="stat"><label>Next Cycle ETA</label><div class="val" id="pd-next-eta" style="font-size:.85rem">-</div></div>
+        <div class="stat"><label>Realized PnL</label><div class="val" id="pd-realized">-</div></div>
+        <div class="stat"><label>Unrealized PnL</label><div class="val" id="pd-unrealized">-</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Controls</h2><div class="sub">Bounded paper trading only | continuous loop until Stop/Pause</div></div>
+        <div class="product-controls">
+          <button class="btn btn-primary" onclick="pdStartBot()">Start Demo Bot</button>
+          <button class="btn" onclick="pdPauseBot()">Pause Demo Bot</button>
+          <button class="btn" onclick="pdStopBot()">Stop Demo Bot</button>
+          <button class="btn btn-primary" onclick="pdRunCycle()">Run One Demo Cycle</button>
+          <button class="btn btn-sell" onclick="pdCloseAll()">Close All Demo Positions</button>
+          <button class="btn" onclick="pdResetWallet()">Reset Demo Wallet</button>
+        </div>
+        <div class="product-note">Start Demo Bot runs continuously until Stop or Pause. Run One Demo Cycle runs exactly once and does not start the loop. Losses are normal in demo. If nothing trades, the explanation panel says why. AI can explain but cannot place trades.</div>
+      </div>
+        <div class="panel">
+          <div class="panel-head"><h2>What is the bot doing?</h2></div>
+          <div class="product-explain">
+            <div class="q">What is happening now</div>
+            <div id="pd-what">-</div>
+            <div class="q">Why it traded / did not trade</div>
+            <div id="pd-why">-</div>
+            <div class="q">Open slots</div>
+            <div id="pd-slots">-</div>
+            <div class="q">Top rejection reasons (last cycle)</div>
+            <div id="pd-rejections">-</div>
+            <div class="q">Next action</div>
+            <div id="pd-next">-</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>AE14 readiness</h2><div class="sub">Read-only smoke-test check - does not place trades</div></div>
+          <div class="product-explain">
+            <div class="q">Negative control</div>
+            <div id="ae14-negative-control">-</div>
+            <div class="q">Trading validation</div>
+            <div id="ae14-trading-validation">-</div>
+            <div class="q">Reason</div>
+            <div id="ae14-reason">-</div>
+            <div class="q">Fresh / stale market rows</div>
+            <div id="ae14-counts">-</div>
+            <div class="q">Recommended next action</div>
+            <div id="ae14-next-action">-</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Strategy Lanes</h2><div class="sub">Bounded paper/demo scouts - not live trading</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Lane</th><th>Enabled</th><th>Seen</th><th>Selected</th><th>Opened</th><th>Blocked</th><th>Last reason</th></tr></thead>
+              <tbody id="pd-lanes-body"><tr><td colspan="7" class="empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><h2>Open Demo Positions</h2><div class="sub">MTM + Sell Demo per row | paper only</div></div>
+          <div class="table-wrap">
+            <table class="pd-open-table">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Symbol / Identity</th><th>Status</th><th>Entry</th><th>Current</th><th>Size</th>
+                  <th>Unrealized</th><th>Age</th><th>To TP/SL</th><th>Exit</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pd-open-body"><tr><td colspan="10" class="empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Recent Demo Activity</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Time</th><th>Event</th><th>Symbol</th><th>Summary</th><th>Flag</th></tr></thead>
+              <tbody id="pd-activity-body"><tr><td colspan="5" class="empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT: Clean Forward Market Feed (AE13K: provider-verified pairs only; not Live Market) -->
+    <div id="tab-clean-forward" class="tab-panel">
+      <div class="safety-strip">
+        <span><strong id="cf-badge">LIVE DISABLED / DEMO ONLY</strong></span>
+        <span id="cf-freshness">Clean feed: -</span>
+        <span>Provider: <span id="cf-provider">dexscreener</span></span>
+      </div>
+      <div class="product-note" style="margin:0 0 .75rem;padding:.65rem .85rem;border:1px solid var(--border, #333);background:rgba(0,180,120,.06);">
+        <strong>Clean Forward Market Feed</strong> — Only DexScreener-verified pair rows.
+        Pair address is the pool/pair id (opens DexScreener chart). Base and quote token addresses are shown separately.
+        This is <em>not</em> Live Market and is separate from the legacy Market Snapshot Feed.
+      </div>
+      <div class="product-note" id="cf-warning" style="margin:0 0 .75rem;padding:.65rem .85rem;border:1px solid var(--border, #333);background:rgba(255,180,0,.06);">
+        Rows represent verified provider pairs. Pair/pool addresses are not token contracts.
+        Trading eligibility requires fresh price, fresh liquidity, and validated tradability.
+      </div>
+      <div class="product-note" id="cf-deferred-msg" style="display:none;margin:0 0 .75rem;padding:.65rem .85rem;border:1px solid var(--border, #333);background:rgba(255,100,80,.08);"></div>
+      <div class="product-hero-stats" id="cf-stats">
+        <div class="stat"><label>Candidates Seen</label><div class="val" id="cf-stat-candidates">-</div></div>
+        <div class="stat"><label>Valid Provider Pairs</label><div class="val" id="cf-stat-valid">-</div></div>
+        <div class="stat"><label>Unique Base Tokens</label><div class="val" id="cf-stat-bases">-</div></div>
+        <div class="stat"><label>Unique Canonical Markets</label><div class="val" id="cf-stat-pairs">-</div></div>
+        <div class="stat"><label>Duplicates Suppressed</label><div class="val" id="cf-stat-dupes">-</div></div>
+        <div class="stat"><label>Invalid / Unresolved</label><div class="val" id="cf-stat-invalid">-</div></div>
+        <div class="stat"><label>Clean Rows Displayed</label><div class="val" id="cf-stat-clean">-</div></div>
+      </div>
+      <div class="lm-refresh-bar cf-refresh-bar" style="margin-bottom:.75rem;">
+        <button class="btn btn-sm" id="cf-refresh-btn" onclick="cfRefreshNow()">Refresh Now</button>
+        <button class="btn btn-sm" id="cf-force-refresh-btn" onclick="cfForceProviderRefresh()" title="Force refresh revalidates provider pairs but still respects provider rate limits.">Force Provider Refresh</button>
+        <span class="lm-refresh-meta">Last UI render: <span id="cf-last-refresh">-</span></span>
+      </div>
+      <div class="cf-refresh-meta-panel" id="cf-refresh-meta-panel">
+        <div class="cf-refresh-meta-grid">
+          <div><label>Refresh mode</label><span id="cf-meta-mode">-</span></div>
+          <div><label>Last provider fetch</label><span id="cf-meta-provider-fetch">-</span></div>
+          <div><label>Cache hit / miss</label><span id="cf-meta-cache">-</span></div>
+          <div><label>Cache age</label><span id="cf-meta-cache-age">-</span></div>
+          <div><label>Cache TTL</label><span id="cf-meta-cache-ttl">-</span></div>
+          <div><label>Values changed</label><span id="cf-meta-values-changed">-</span></div>
+          <div><label>Payload hashes changed</label><span id="cf-meta-hash-changed">-</span></div>
+          <div><label>Deferred / rate-limited</label><span id="cf-meta-deferred">-</span></div>
+        </div>
+        <div class="cf-refresh-status-msg" id="cf-refresh-msg"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Clean Forward Market Feed</h2>
+          <div class="sub">Provider-verified pairs | diversity capped | research/demo only</div>
+        </div>
+        <div class="table-wrap market-table-wrap" id="cf-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>SYMBOL/PAIR</th>
+                <th>Chain</th>
+                <th>DEX</th>
+                <th>Market URL / Open Chart</th>
+                <th>Derived Helper ID</th>
+                <th>Base token address</th>
+                <th>Quote token address</th>
+                <th>Price</th>
+                <th>Liquidity</th>
+                <th>Volume 24h</th>
+                <th>Txns 24h</th>
+                <th>Δ5m</th><th>Δ1h</th><th>Δ6h</th><th>Δ24h</th>
+                <th>Last fetched</th>
+                <th>Freshness</th>
+                <th>Tradability</th>
+                <th>Identity</th>
+                <th>Verification</th>
+              </tr>
+            </thead>
+            <tbody id="cf-body"><tr><td colspan="20" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:1rem;">
+        <div class="panel-head">
+          <h2>Alternative pools</h2>
+          <div class="sub">Duplicate base-token / symbol pools suppressed from main feed (expandable)</div>
+        </div>
+        <details id="cf-alts-details" style="padding:0 1rem 1rem;">
+          <summary style="cursor:pointer;font-size:.85rem;margin-bottom:.5rem;">
+            Show alternative pools (<span id="cf-alts-count">0</span>)
+          </summary>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pair</th><th>Chain</th><th>DEX</th><th>DexScreener URL</th>
+                  <th>Pair address</th><th>Base</th><th>Liquidity</th><th>Vol 24h</th><th>Reason</th>
+                </tr>
+              </thead>
+              <tbody id="cf-alts-body"><tr><td colspan="9" class="empty">None</td></tr></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- PRODUCT: Market Snapshot Feed (AE13J: not verified live tradable token universe) -->
+    <div id="tab-live-market" class="tab-panel">
+      <div class="safety-strip">
+        <span><strong id="lm-badge">LIVE DISABLED / DEMO ONLY</strong></span>
+        <span id="lm-freshness">Market data: -</span>
+        <span>Provider: <span id="lm-provider">-</span></span>
+      </div>
+      <div class="product-note" id="lm-truth-disclaimer" style="margin:0 0 .75rem;padding:.65rem .85rem;border:1px solid var(--border, #333);background:rgba(255,180,0,.06);">
+        <strong>Market Snapshot Feed</strong> — Rows may represent pools/pairs, not token contracts.
+        Trading requires fresh price, fresh liquidity, and validated tradability.
+      </div>
+      <div class="product-hero-stats">
+        <div class="stat"><label>Latest Update</label><div class="val" id="lm-updated" style="font-size:.85rem">-</div></div>
+        <div class="stat"><label>Feed Pairs</label><div class="val" id="lm-pairs">-</div></div>
+        <div class="stat"><label>Passed Filter</label><div class="val" id="lm-passed">-</div></div>
+        <div class="stat"><label>Dropped / Blocked</label><div class="val" id="lm-dropped">-</div></div>
+        <div class="stat"><label>Avg Whale Score</label><div class="val" id="lm-whale">-</div></div>
+        <div class="stat"><label>RSS / News</label><div class="val" id="lm-rss-count">-</div></div>
+        <div class="stat"><label>Sentiment Avg</label><div class="val" id="lm-sent-avg">-</div></div>
+      </div>
+      <div class="filters" id="lm-filters" style="padding:0 0 .75rem;">
+        <button class="filter-chip active" data-lm="all" onclick="lmSetFilter('all',this)">All</button>
+        <button class="filter-chip" data-lm="passed" onclick="lmSetFilter('passed',this)">Passed</button>
+        <button class="filter-chip" data-lm="blocked" onclick="lmSetFilter('blocked',this)">Blocked</button>
+        <button class="filter-chip" data-lm="watch" onclick="lmSetFilter('watch',this)">Watch</button>
+        <button class="filter-chip" data-lm="demo" onclick="lmSetFilter('demo',this)">Demo Candidates</button>
+        <button class="filter-chip" data-lm="social" onclick="lmSetFilter('social',this)">Social Confirmed</button>
+        <button class="filter-chip" data-lm="opportunistic" onclick="lmSetFilter('opportunistic',this)">Opportunistic</button>
+        <button class="filter-chip" data-lm="unknown" onclick="lmSetFilter('unknown',this)">Unknown</button>
+        <button class="filter-chip" data-lm="unresolved" onclick="lmSetFilter('unresolved',this)">Unresolved</button>
+        <button class="filter-chip" data-lm="infrastructure" onclick="lmSetFilter('infrastructure',this)">Infrastructure</button>
+        <button class="btn btn-sm" id="lm-filter-mode-btn" onclick="lmToggleFilterMode()" title="Default hides non-matching rows">Mode: hide non-matches (default)</button>
+        <span class="lm-refresh-meta" id="lm-filter-count">Showing -</span>
+      </div>
+      <div class="lm-refresh-bar" id="lm-refresh-bar">
+        <button class="btn btn-sm" id="lm-pause-btn" onclick="lmPauseRefresh()">Pause Auto Refresh</button>
+        <button class="btn btn-sm" id="lm-resume-btn" onclick="lmResumeRefresh()" style="display:none;">Resume Auto Refresh</button>
+        <button class="btn btn-sm" onclick="lmRefreshNow()">Refresh Now</button>
+        <button class="btn btn-sm" id="lm-pinned-only-btn" onclick="lmTogglePinnedOnly()">Show only pinned/followed</button>
+        <span class="lm-refresh-meta">Last refresh: <span id="lm-last-refresh">-</span></span>
+        <span class="lm-refresh-meta">Next: <span id="lm-next-refresh">-</span></span>
+        <span class="lm-refresh-meta" id="lm-refresh-paused-label" style="display:none;color:var(--amber);font-weight:600;">Auto refresh paused</span>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><h2>Market Snapshot Feed</h2><div class="sub">Provider pair/pool rows | not verified live token universe | keyed updates</div></div>
+          <div class="table-wrap market-table-wrap" id="lm-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Time</th><th>Symbol / Pair</th><th>ID</th><th>Chain</th><th>Price</th><th>Liquidity</th><th>Vol 24h</th>
+                  <th>Δ5m</th><th>Δ1h</th><th>Δ6h</th><th>Δ24h</th>
+                  <th>Buy Ratio</th><th>Whale</th><th>Semantic</th><th>Semantic Status</th>
+                  <th>Opportunity</th><th>Status</th><th>Reason</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="lm-body"><tr><td colspan="20" class="empty">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>RSS / News Sentiment</h2><div class="sub">Headline lexicon scores</div></div>
+          <div class="product-note" id="lm-rss-status">Loading RSS...</div>
+          <div class="aggregate" style="padding:0 1rem;">
+            <span style="font-size:.78rem;color:var(--muted);">Aggregate</span>
+            <span class="mono" id="lm-rss-agg" style="font-weight:700;">-</span>
+            <span style="font-size:.72rem;color:var(--muted);margin-left:.5rem;" id="lm-rss-updated"></span>
+          </div>
+          <div class="sentiment-list" id="lm-rss-list" style="padding:1rem;"><div class="empty">Loading...</div></div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:1rem;">
+        <div class="panel-head">
+          <div>
+            <h2>Watchlist</h2>
+            <div class="sub">Persistent tracking | paper/demo research only | not live trading</div>
+          </div>
+        </div>
+        <div class="product-note" id="wl-note">Watchlist is a research/tracking aid - paper/demo only.</div>
+        <div style="padding:0 1rem 1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+          <input id="wl-name" type="text" placeholder="Name (e.g. Giggle Fund)" style="min-width:140px;padding:.45rem .6rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.78rem;" />
+          <input id="wl-symbol" type="text" placeholder="Symbol (e.g. GIGGLE)" style="min-width:120px;padding:.45rem .6rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.78rem;" />
+          <input id="wl-pair" type="text" placeholder="Pair / contract address" style="flex:1;min-width:200px;padding:.45rem .6rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.72rem;" />
+          <select id="wl-chain" style="padding:.4rem .5rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.75rem;">
+            <option value="solana">Solana</option>
+            <option value="ethereum">Ethereum</option>
+            <option value="bsc">BSC</option>
+            <option value="base">Base</option>
+          </select>
+          <select id="wl-category" style="padding:.4rem .5rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.75rem;">
+            <option value="user wants investigation">Investigate</option>
+            <option value="user thinks opportunistic">Thinks opportunistic</option>
+            <option value="user thinks social">Thinks social</option>
+          </select>
+          <input id="wl-note-input" type="text" placeholder="Optional note" style="min-width:140px;padding:.45rem .6rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.78rem;" />
+          <button class="btn btn-primary" onclick="addWatchlistItem()">Add to Watchlist</button>
+        </div>
+        <div class="table-wrap" style="padding:0 1rem 1rem;">
+          <table>
+            <thead>
+              <tr>
+                <th>Display Name</th><th>Symbol / Pair</th><th>Chain</th><th>Full ID</th>
+                <th>User hypothesis</th><th>System semantic</th><th>Market match</th><th>Data / statuses</th>
+                <th>Evidence</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="wl-body"><tr><td colspan="10" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:1rem;">
+        <div class="panel-head">
+          <div>
+            <h2>Demo Trade Queue - paper only</h2>
+            <div class="sub">Manual Watchlist Scout | evaluated by bot | risk guard applies | not live trading</div>
+          </div>
+          <button class="btn btn-sm" onclick="loadDemoQueuePanel()">↻ Refresh</button>
+        </div>
+        <div class="product-note" id="dq-note">Queued items are paper/demo candidates only. Add to Demo Queue does not place a live trade.</div>
+        <div class="table-wrap" style="padding:0 1rem 1rem;">
+          <table>
+            <thead>
+              <tr>
+                <th>Symbol</th><th>Chain</th><th>ID</th><th>Lane</th><th>Risk profile</th><th>Semantic</th>
+                <th>Market</th><th>Eligibility</th><th>Last decision</th><th>Blocker</th><th>Evaluation</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="dq-body"><tr><td colspan="12" class="empty">No demo queue items yet.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT: Portfolio -->
+    <div id="tab-portfolio" class="tab-panel">
+      <div class="product-hero-stats">
+        <div class="stat"><label>Demo Equity</label><div class="val" id="pf-balance">-</div></div>
+        <div class="stat"><label>Cash</label><div class="val" id="pf-cash">-</div></div>
+        <div class="stat"><label>Realized PnL</label><div class="val" id="pf-pnl">-</div></div>
+        <div class="stat"><label>Fees</label><div class="val" id="pf-fees">-</div></div>
+      </div>
+      <div class="product-note">Source: <span id="pf-source">-</span> | Archives: <span id="pf-archive-note">-</span></div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Current Tradable Demo Positions</h2>
+          <div class="sub">Mark-to-market | per-position Sell Demo | paper/demo only</div>
+        </div>
+        <div class="product-note">Duplicate symbols are distinct markets - compare Market URL / Coin ID / Lane. Manual Sell closes one demo position only.</div>
+        <div class="table-wrap pf-positions-wrap">
+          <table class="pf-positions-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Symbol / Pair</th>
+                <th>Status</th>
+                <th>Chain</th>
+                <th>Market URL</th>
+                <th>Coin ID</th>
+                <th>Strategy Lane</th>
+                <th>Entry Price</th>
+                <th>Current Price</th>
+                <th>Size</th>
+                <th>Unrealized PnL</th>
+                <th>Age</th>
+                <th>TP Distance</th>
+                <th>SL Distance</th>
+                <th>Exit Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pf-open-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Closed / Recent Demo Trades</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Time</th><th>Side</th><th>Symbol</th><th>Notional</th><th>Fees</th><th>Reason</th></tr></thead>
+            <tbody id="pf-trades-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Archived Positions (display-only)</h2><div class="sub">Virtual Ledger View | not tradable | not live</div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Symbol</th><th>Size</th><th>Note</th></tr></thead>
+            <tbody id="pf-archive-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT: Market Opportunities -->
+    <div id="tab-market" class="tab-panel">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Market Opportunities</h2><div class="sub">Runtime candidates with plain-language actions</div></div>
+          <button class="btn btn-sm" onclick="loadMarketOpportunitiesTab()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Coin</th><th>Price</th><th>Liquidity</th><th>Semantic</th>
+                <th>Action</th><th>Why</th><th>Seen</th>
+              </tr>
+            </thead>
+            <tbody id="mkt-body"><tr><td colspan="7" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT: AI Insights -->
+    <div id="tab-insights" class="tab-panel">
+      <div class="panel">
+        <div class="panel-head"><h2>Semantic &amp; Sentiment Insights</h2><div class="sub">Semantic evidence summary; social/opportunistic counts include display evidence, with source breakdown below</div></div>
+        <div class="product-explain">
+          <div class="q">Semantic Source</div>
+          <div id="ins-source" style="font-weight:700;color:var(--accent2)">-</div>
+          <div class="q">How Social is counted</div>
+          <div id="ins-social-why">-</div>
+          <div class="q">Source note</div>
+          <div id="ins-static-note">-</div>
+        </div>
+        <div class="product-hero-stats" style="padding:0 1rem 1rem;">
+          <div class="stat"><label>Rows observed</label><div class="val" id="ins-seen">-</div></div>
+          <div class="stat"><label>Classified</label><div class="val" id="ins-classified">-</div></div>
+          <div class="stat"><label>Unknown</label><div class="val" id="ins-unresolved">-</div></div>
+          <div class="stat"><label>Unique coins</label><div class="val" id="ins-unique">-</div></div>
+          <div class="stat"><label>Unique pairs</label><div class="val" id="ins-pairs">-</div></div>
+          <div class="stat"><label>Static Snapshot</label><div class="val" id="ins-static">-</div></div>
+          <div class="stat"><label>Social</label><div class="val" id="ins-social">-</div></div>
+          <div class="stat"><label>Opportunistic</label><div class="val" id="ins-opp">-</div></div>
+          <div class="stat"><label>Opp. suspected</label><div class="val" id="ins-suspected">-</div></div>
+          <div class="stat"><label>Unknown (count)</label><div class="val" id="ins-unknown">-</div></div>
+        </div>
+        <div class="product-explain" style="margin-top:.35rem;">
+          <div class="q">Epistemic levels (do not collapse into one Social number)</div>
+          <div class="product-note" style="margin:0 0 .5rem;">
+            System Verified = semantic_verdicts only · Legacy DB = paper_trades · Registry = cluster_registry ·
+            Curated = user hypotheses only · SOCIAL? badges are not confirmed social.
+          </div>
+        </div>
+        <div class="product-hero-stats" style="padding:0 1rem 1rem;" id="ins-semantic-verdict-stats">
+          <div class="stat"><label>System Verified Social</label><div class="val" id="ins-sem-social">-</div></div>
+          <div class="stat"><label>System Verified Opportunistic</label><div class="val" id="ins-sem-opp">-</div></div>
+          <div class="stat"><label>System Verified Insufficient</label><div class="val" id="ins-sem-insuff">-</div></div>
+          <div class="stat"><label>System Verified Failed</label><div class="val" id="ins-sem-failed">-</div></div>
+          <div class="stat"><label>Legacy DB Social</label><div class="val" id="ins-sem-legacy-social">-</div></div>
+          <div class="stat"><label>Legacy DB Opportunistic</label><div class="val" id="ins-sem-legacy-opp">-</div></div>
+          <div class="stat"><label>Registry Social</label><div class="val" id="ins-sem-registry-social">-</div></div>
+          <div class="stat"><label>Registry Opportunistic</label><div class="val" id="ins-sem-registry-opp">-</div></div>
+          <div class="stat"><label>Curated Social Hypotheses</label><div class="val" id="ins-sem-curated-social">-</div></div>
+          <div class="stat"><label>Curated Opportunistic Hypotheses</label><div class="val" id="ins-sem-curated-opp">-</div></div>
+          <div class="stat"><label>Curated Unknown Hypotheses</label><div class="val" id="ins-sem-curated-unknown">-</div></div>
+          <div class="stat"><label>Curated File Exists</label><div class="val" id="ins-sem-curated-exists">-</div></div>
+        </div>
+        <div class="product-note" id="ins-class-warn" style="display:none;color:var(--amber);"></div>
+        <div class="product-note">
+          Local rules: <span id="ins-local">-</span><br/>
+          Gemini: <span id="ins-gemini">-</span><br/>
+          Qwen: <span id="ins-qwen">-</span><br/>
+          RSS: <span id="ins-rss">-</span>
+        </div>
+        <div class="table-wrap" style="padding:0 1rem 1rem;">
+          <table>
+            <thead><tr><th>Symbol</th><th>Label</th><th>Source</th><th>Seen</th><th>Last seen</th></tr></thead>
+            <tbody id="ins-registry-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT: Settings (presets first) -->
+    <div id="tab-settings" class="tab-panel">
+      <div class="panel">
+        <div class="panel-head"><h2>Demo Trading Presets</h2><div class="sub">Choose a style - all remain paper/demo only</div></div>
+        <div class="preset-grid" id="pd-presets">Loading presets...</div>
+        <div class="product-note">
+          AI audit mode - no trade authority. Gemini/Qwen can explain markets but cannot approve or place live trades.
+        </div>
+      </div>
+      <details class="advanced-box">
+        <summary>Advanced Settings (engineering parameters)</summary>
+        <div id="advanced-settings-host"></div>
+      </details>
+    </div>
+
+    <!-- PRODUCT: Research Evidence / Audit Vault -->
+    <div id="tab-vault" class="tab-panel">
+      <div class="ae12-banner">
+        <strong>Research Evidence / Audit Vault</strong> -
+        Engineering and thesis evidence lives here. It is not the primary trading workflow.
+        Research evidence is ready for reporting, but not a live trading signal.
+      </div>
+      <details class="vault-section" open>
+        <summary>Safety</summary>
+        <div class="vault-body">
+          <div class="product-note">Wallet not connected | Live trading disabled | No private keys | Paper/demo only</div>
+          <div id="vault-safety-host">
+            <div class="product-explain">
+              <div class="q">Safety flags</div>
+              <div id="vault-safety-flags">wallet_configured=false | private_key_accessed=false | live_trading_ready=false | profitability_proven=false</div>
+              <div class="q">Provider / trade authority</div>
+              <div id="vault-provider-flags">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </details>
+      <details class="vault-section">
+        <summary>Forward Evidence / Model / Agent Evidence</summary>
+        <div class="vault-body" id="vault-ae12-host">
+          <div class="product-note">Research evidence panels load below when expanded. This is reporting evidence, not a live trading signal.</div>
+        </div>
+      </details>
+      <details class="vault-section">
+        <summary>Former panel mapping</summary>
+        <div class="vault-body">
+          <div class="product-note">
+            <strong>Former Live Dashboard</strong> → restored as primary tab <em>Live Market</em> (prices, whale, RSS).<br/>
+            <strong>Former Position Manager</strong> → <em>Portfolio</em> + Demo Trading controls.<br/>
+            <strong>Former Analytics / Forward Evidence</strong> → remain here under Raw Audit Details (research only).<br/>
+            <strong>Legacy cluster counters (e.g. historical opportunistic counts)</strong> → historical snapshot only; not current runtime metrics.
+          </div>
+        </div>
+      </details>
+      <details class="vault-section">
+        <summary>Raw Audit Details (engineering console)</summary>
+        <div class="vault-body">
+          <div class="product-note">Former engineering panels mounted here for continuity - not primary workflow.</div>
+          <div id="vault-legacy-host"></div>
+        </div>
+      </details>
+    </div>
+
+    <!-- LEGACY ENGINEERING PANELS (hidden from primary nav; kept for vault / scripts) -->
+    <div id="legacy-engineering-root" style="display:none">
+    <!-- TAB 1: Live Dashboard -->
+    <div id="tab-dashboard" class="tab-panel">
+      <div class="ae12-semantic-section" id="ae12-semantic-section">
+        <h2>AE12 Semantic Coin Classification</h2>
+        <div class="ae12-semantic-meta" id="ae12-semantic-meta">
+          <strong id="ae13-semantic-source-label">Semantic Source: -</strong>
+          | Final UI counts are deduplicated by coin/token identity after local manual-review drilldown.
+          Pair-level adjudications are audit detail only.
+          <span class="gate" id="ae12-semantic-gate">Gate: -</span>
+          | Reporting only - not trade authority.
+          | UNKNOWN_UNRESOLVED is not social and not opportunistic.
+          | OP.SUSPECTED is suspected, not confirmed opportunistic.
+          | Web grounding was unavailable in this run.
+        </div>
+        <div id="ae13-semantic-runtime-meta" style="font-size:.75rem;color:var(--muted);margin:.35rem 0 .6rem;padding:0 .25rem;">
+          Runtime candidates / classified / unresolved: - | Social sources: - | Gemini: - | RSS→SOCIAL link: -
+        </div>
+        <div class="ae12-semantic-cards" id="ae12-semantic-cards">
+          <div class="ae12-sem-card social-card">
+            <label>SOCIAL CONFIRMED</label>
+            <div class="val" id="ae12-stat-social">-</div>
+          </div>
+          <div class="ae12-sem-card opp-confirmed-card">
+            <label>OPPORTUNISTIC CONFIRMED</label>
+            <div class="val" id="ae12-stat-opp-confirmed">-</div>
+          </div>
+          <div class="ae12-sem-card op-suspected-card">
+            <label>OP.SUSPECTED</label>
+            <div class="val" id="ae12-stat-op-suspected">-</div>
+          </div>
+          <div class="ae12-sem-card unknown-unresolved-card">
+            <label>UNKNOWN UNRESOLVED</label>
+            <div class="val" id="ae12-stat-unknown">-</div>
+          </div>
+          <div class="ae12-sem-card unique-coins-card">
+            <label>UNIQUE COINS</label>
+            <div class="val" id="ae12-stat-unique">-</div>
+          </div>
+          <div class="ae12-sem-card infra-card">
+            <label>INFRASTRUCTURE CONFIRMED</label>
+            <div class="val" id="ae12-stat-infra">-</div>
+          </div>
+          <div class="ae12-sem-card manual-remaining-card">
+            <label>MANUAL REVIEW REMAINING</label>
+            <div class="val" id="ae12-stat-manual-remaining">-</div>
+          </div>
+        </div>
+        <div class="ae12-sem-unavailable" id="ae12-sem-unavailable">
+          AE12 final semantic coin counts unavailable. Legacy counters are diagnostic only.
+        </div>
+        <div id="ae13-social-zero-note" style="display:none;font-size:.72rem;color:var(--muted);margin-top:.4rem;padding:0 .25rem;"></div>
+      </div>
+
+      <div class="stats" id="dash-stats">
+        <div class="stat"><label>Avg Whale Score</label><div class="val" id="stat-avg-whale">-</div></div>
+        <div class="stat"><label>Demo Equity</label><div class="val" id="stat-equity">-</div></div>
+        <div class="stat"><label>Total Fees Paid</label><div class="val" id="stat-fees">-</div></div>
+        <div class="stat"><label>Net ROI (after fees)</label><div class="val" id="stat-net-roi">-</div></div>
+        <div class="stat"><label>Open Positions</label><div class="val" id="stat-open-pos" style="color:var(--accent2)">-</div></div>
+        <div class="stat"><label>DB Coins</label><div class="val" id="stat-db-coins">-</div></div>
+        <div class="stat"><label>DB Snapshots</label><div class="val" id="stat-db-snaps">-</div></div>
+      </div>
+      <div class="ae12-warn" id="dash-legacy-note" style="margin:0 0 .35rem;padding:0 .25rem;">
+        Epistemic levels are separate: System Verified ≠ Legacy DB ≠ Registry ≠ Curated hypotheses. Do not treat System Verified Social: 0 as “no social labels exist.”
+      </div>
+      <div class="legacy-diag-stats" id="legacy-diag-stats">
+        <div class="stat"><label>System Verified Social</label><div class="val" id="stat-sem-social">-</div></div>
+        <div class="stat"><label>System Verified Opportunistic</label><div class="val" id="stat-sem-opp">-</div></div>
+        <div class="stat"><label>System Verified Insufficient</label><div class="val" id="stat-sem-insuff">-</div></div>
+        <div class="stat"><label>System Verified Failed</label><div class="val" id="stat-sem-failed">-</div></div>
+        <div class="stat"><label>Legacy DB Social</label><div class="val" id="stat-legacy-social">-</div></div>
+        <div class="stat"><label>Legacy DB Opportunistic</label><div class="val" id="stat-legacy-opp">-</div></div>
+        <div class="stat"><label>Registry Social</label><div class="val" id="stat-registry-social">-</div></div>
+        <div class="stat"><label>Registry Opportunistic</label><div class="val" id="stat-registry-opp">-</div></div>
+        <div class="stat"><label>Curated Social Hypotheses</label><div class="val" id="stat-curated-social">-</div></div>
+        <div class="stat"><label>Curated Opportunistic Hypotheses</label><div class="val" id="stat-curated-opp">-</div></div>
+        <div class="stat"><label>Curated Unknown Hypotheses</label><div class="val" id="stat-curated-unknown">-</div></div>
+        <div class="stat"><label>Curated Targets Enabled</label><div class="val" id="stat-curated-enabled">-</div></div>
+      </div>
+      <div class="panel" style="margin-bottom:1rem;">
+        <div class="panel-head">
+          <div>
+            <h2>Manual Watchlist - Force AI Analysis</h2>
+            <div class="sub">Paste a contract address | Gemini 2.5 Flash clusters once + trades in Demo</div>
+          </div>
+        </div>
+        <div style="padding:1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+          <input id="watchlist-address" type="text" placeholder="Contract / pair address (Solana, ETH, ...)"
+            style="flex:1;min-width:220px;padding:.55rem .75rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.78rem;" />
+          <select id="watchlist-chain" style="padding:.45rem .6rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.75rem;">
+            <option value="solana">Solana</option>
+            <option value="ethereum">Ethereum</option>
+            <option value="bsc">BSC</option>
+            <option value="base">Base</option>
+          </select>
+          <button class="btn btn-primary" onclick="addToWatchlist()">Analyze Now</button>
+        </div>
+        <div id="watchlist-status" style="padding:0 1rem .5rem;font-size:.78rem;color:var(--muted);"></div>
+        <div class="table-wrap" style="max-height:220px;padding:0 1rem 1rem;">
+          <table>
+            <thead>
+              <tr>
+                <th>Contract</th><th>Chain</th><th>Symbol</th><th>Cluster</th>
+                <th>Decision</th><th>Whale</th><th>Added</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="watchlist-tbody"><tr><td colspan="8" class="empty">Loading watchlist...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="grid-2">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2><span class="pulse"></span><span id="market-table-title">Live Market Data</span></h2>
+              <div class="sub" id="market-table-sub">Academic transparency | passed vs dropped audit</div>
+            </div>
+            <span class="mono" style="color:var(--muted);" id="whale-count">0 rows</span>
+          </div>
+          <div class="filters" id="transparency-filters">
+            <button class="filter-chip active" id="btn-filter-passed" onclick="setTransparencyView('passed',this)">Passed Filter (Clean Research Data)</button>
+            <button class="filter-chip audit" id="btn-filter-dropped" onclick="setTransparencyView('dropped',this)">Dropped/Raw Filter (Audit Log)</button>
+          </div>
+          <div class="filters" id="cluster-filters">
+            <button class="filter-chip active" data-cluster="" onclick="setClusterFilter(this,'')">All</button>
+            <button class="filter-chip" data-cluster="SOCIALLY_MOTIVATED" onclick="setClusterFilter(this,'SOCIALLY_MOTIVATED')">Socially Motivated</button>
+            <button class="filter-chip" data-cluster="OPPORTUNISTIC_SPECULATIVE" onclick="setClusterFilter(this,'OPPORTUNISTIC_SPECULATIVE')">Opportunistic</button>
+          </div>
+          <div class="table-wrap market-table-wrap">
+            <table>
+              <thead id="market-thead">
+                <tr>
+                  <th>Time</th><th>Contract</th><th>Symbol</th><th>Network</th><th>Cluster</th><th>Whale Score</th>
+                  <th>Alert</th><th>Buy Ratio</th><th>Vol 24h</th><th>Liquidity</th><th>Δ1h</th><th>Δ24h</th><th>Drop Reason</th>
+                </tr>
+              </thead>
+              <tbody id="whale-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-head">
+            <div><h2>Sentiment Matrix</h2><div class="sub">Cointelegraph RSS</div></div>
+          </div>
+          <div class="aggregate">
+            <span style="font-size:.78rem;color:var(--muted);">Aggregate</span>
+            <span class="mono" id="sentiment-aggregate" style="font-weight:700;">-</span>
+          </div>
+          <div class="sentiment-list" id="sentiment-list"><div class="empty">Loading...</div></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- TAB 2: Position Manager -->
+    <div id="tab-positions" class="tab-panel">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Demo Wallet &amp; Execution Mode</h2><div class="sub">$10,000 paper wallet | 1.5% + priority fees | paper/demo only</div></div>
+          <div style="display:flex;gap:.5rem;align-items:center;">
+            <button class="btn btn-sm mode-btn" id="btn-mode-demo" onclick="setMode('DEMO')">● DEMO Mode</button>
+            <button class="btn btn-sm mode-btn" id="btn-mode-live" onclick="setMode('LIVE')">● LIVE Mode</button>
+            <button class="btn btn-sm" onclick="resetWallet()">Reset $10K</button>
+          </div>
+        </div>
+        <div id="ae13-ledger-source" style="padding:.5rem 1rem;font-size:.72rem;color:var(--muted);">
+          Ledger source: - | No wallet | No live submission
+        </div>
+        <div class="wallet-grid" id="wallet-grid"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Agent Controls</h2>
+          <label class="toggle"><input type="checkbox" id="auto-exec" checked onchange="toggleAutoExec()"/> AI audit mode - no trade authority (auto paper execution when DEMO)</label>
+        </div>
+        <div style="padding:1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+          <button class="btn btn-primary" id="btn-manual-buy" onclick="manualBuy()">Manual Demo BUY</button>
+          <button class="btn btn-sell" id="btn-manual-sell" onclick="manualSell()">Manual Demo SELL</button>
+          <select id="sell-position-select" style="padding:.4rem .6rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.75rem;">
+            <option value="">Latest open position</option>
+          </select>
+          <button class="btn" onclick="loadPositionsTab()">↻ Refresh Positions</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Virtual Ledger View (merged paper/demo)</h2>
+            <div class="sub">Non-destructive read model | provenance per row | archives never rewritten</div>
+          </div>
+        </div>
+        <div id="ae13-vlv-summary" style="padding:.5rem 1rem;font-size:.75rem;color:var(--muted);">Loading Virtual Ledger View...</div>
+        <div class="table-wrap" style="max-height:180px;">
+          <table>
+            <thead><tr><th>Order ID</th><th>Symbol</th><th>Side</th><th>Notional</th><th>Status</th><th>Source Layer</th></tr></thead>
+            <tbody id="ae13-orders-body"><tr><td colspan="6" class="empty">-</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Open Positions</h2><div class="sub" id="ae13-open-pos-sub">Write SoT + Virtual Ledger View</div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Symbol</th><th>Chain</th><th>Entry</th><th>Size</th><th>Cluster / Source</th><th>Action</th></tr></thead>
+            <tbody id="open-positions-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Trade History (fee-adjusted)</h2><div class="sub">Paper/demo only | not profitability evidence</div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Time</th><th>Side</th><th>Symbol</th><th>Notional</th><th>Fees</th><th>Net ROI</th><th>Reason</th><th>Source</th></tr></thead>
+            <tbody id="trades-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: System Configuration (legacy / advanced) -->
+    <div id="tab-settings-legacy" class="tab-panel">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>System Configuration</h2>
+          <div class="sub">Runtime effective settings | canonical keys | PATCH save</div>
+        </div>
+        <div class="sc-meta">
+          <span id="sc-load-status">-</span>
+          <span id="sc-hash-meta" style="display:block;margin-top:.35rem;"></span>
+          <span id="sc-dirty-label" class="sc-dirty" style="display:inline-block;margin-top:.35rem;"></span>
+        </div>
+        <div id="sc-top-error" class="sc-top-error"></div>
+        <div id="sc-warnings" class="sc-warnings" style="display:none;"></div>
+        <div id="sc-form-sections"></div>
+        <div class="sc-toolbar">
+          <button class="btn btn-primary" id="sc-save-btn" onclick="saveSystemConfig()" disabled>Save Changes</button>
+          <button class="btn" id="sc-discard-btn" onclick="discardSystemConfig()">Discard Changes / Refresh from Server</button>
+          <span class="sc-saving" id="sc-saving-status"></span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Technical Effective Settings Inspector</h2>
+          <div class="sub">Populated from GET /api/settings/effective</div>
+        </div>
+        <div class="sc-inspector-wrap table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>UI label</th><th>canonical_key</th><th>displayed_value</th><th>internal_value</th>
+                <th>unit</th><th>source</th><th>default_value</th><th>alias_resolved</th>
+                <th>active_status</th><th>backend_consumer</th><th>notes/warnings</th>
+              </tr>
+            </thead>
+            <tbody id="sc-inspector-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Analytics -->
+    <div id="tab-analytics" class="tab-panel">
+      <div class="panel" style="margin-bottom:1rem;">
+        <div class="panel-head">
+          <h2>Training Dataset</h2>
+          <div class="sub" id="training-dataset-sub">Outcome labels for ML / Qwen evaluation</div>
+        </div>
+        <div style="padding:1rem;font-size:.78rem;color:var(--muted);" id="training-dataset-body">
+          Loading training dataset status...
+        </div>
+      </div>
+      <div class="chart-grid">
+        <div class="panel"><div class="panel-head"><h2>Cluster Distribution</h2></div><div class="chart-box"><canvas id="chart-clusters"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h2>Net ROI Over Time (%)</h2></div><div class="chart-box"><canvas id="chart-roi"></canvas></div></div>
+        <div class="panel" style="grid-column:1/-1;"><div class="panel-head"><h2>Price Change vs Buy Ratio (by cluster)</h2></div><div class="chart-box"><canvas id="chart-scatter"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- TAB 5: AE12 Forward Evidence (read-only research observability) -->
+    <div id="tab-ae12" class="tab-panel">
+      <div class="ae12-banner">
+        <strong>Research / paper-demo observability only.</strong>
+        Not live-approved | Not profitability-proven | No trade controls | No wallet controls | No reset.
+        Forward returns are outcome labels only. Qwen/Gemini/Ollama are audit/explanation layers, not trade authority.
+        Paper/demo exploration is not live-trading approval.
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;">
+        <div class="sub" id="ae12-load-status">AE12 panels load from /api/ae12/* (cached ReportManager)</div>
+        <button class="btn btn-sm" onclick="loadAe12Tab(true)">↻ Refresh AE12 cache view</button>
+      </div>
+
+      <div class="panel" id="ae12-panel-status">
+        <div class="panel-head"><h2>AE12 Final System Status</h2><div class="sub">Gate | safety flags | latest root</div></div>
+        <div class="ae12-body" id="ae12-status-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-runtime">
+        <div class="panel-head"><h2>Runtime / Data Collection Status</h2><div class="sub">Census-backed | read-only</div></div>
+        <div class="ae12-body" id="ae12-runtime-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-forward">
+        <div class="panel-head"><h2>Forward Evidence</h2><div class="sub">Price freshness differs from horizon maturity</div></div>
+        <div class="ae12-body" id="ae12-forward-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-missed">
+        <div class="panel-head"><h2>Missed Winners</h2><div class="sub">Outcome labels only</div></div>
+        <div class="ae12-body" id="ae12-missed-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-tvnt">
+        <div class="panel-head"><h2>Trade vs No-Trade</h2><div class="sub">Not profitability proof</div></div>
+        <div class="ae12-body" id="ae12-tvnt-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-strict">
+        <div class="panel-head"><h2>Strict vs Exploration</h2><div class="sub">Strict approved = 0 in this set</div></div>
+        <div class="ae12-body" id="ae12-strict-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-qwen">
+        <div class="panel-head"><h2>Intelligent-Agent / Qwen</h2><div class="sub">NO_TRADE_AUTHORITY</div></div>
+        <div class="ae12-body" id="ae12-qwen-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-safety">
+        <div class="panel-head"><h2>Wallet / Safety</h2><div class="sub">Live trading approval = NO</div></div>
+        <div class="ae12-body" id="ae12-safety-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-taxonomy">
+        <div class="panel-head"><h2>Signal Taxonomy QA (Legacy Diagnostic)</h2><div class="sub">legacy_diagnostic | not final semantic classification</div></div>
+        <div class="ae12-body" id="ae12-taxonomy-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-sentimentfix">
+        <div class="panel-head"><h2>AE12-SentimentFix / Dual-Axis Repair</h2><div class="sub">dual_axis_repair | not final semantic classification | not AE12.6</div></div>
+        <div class="ae12-body" id="ae12-sentimentfix-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-semantic-classifier">
+        <div class="panel-head"><h2>Semantic Coin Classifier (Local Diagnostic)</h2><div class="sub">local_classifier | coverage diagnostic | not final</div></div>
+        <div class="ae12-body" id="ae12-semantic-classifier-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-gemini-adjudication">
+        <div class="panel-head"><h2>Gemini Semantic Adjudication (Final Coin Counts)</h2><div class="sub">Coin-level final | pair-level audit detail | reporting only</div></div>
+        <div class="ae12-body" id="ae12-gemini-adjudication-body">Loading...</div>
+      </div>
+
+      <div class="panel" id="ae12-panel-intelligent-agents">
+        <div class="panel-head"><h2>Intelligent Agent Layer (AE12.7)</h2><div class="sub">Operational demo | explanation/audit/context only | NO_TRADE_AUTHORITY</div></div>
+        <div class="ae12-body" id="ae12-agents-body">Loading...</div>
+      </div>
+    </div>
+    </div><!-- /legacy-engineering-root -->
+  </main>
+
+  <button id="chat-toggle" title="AI Assistant - explanation only, no trade authority">💬</button>
+  <div id="chat-panel">
+    <div class="chat-header">
+      <h3 style="font-size:.9rem;" id="chat-title">AI Assistant - explanation only, no trade authority</h3>
+      <p style="font-size:.7rem;color:var(--muted);" id="chat-capability">Ask about demo bot status, blockers, positions, sentiment, or registry. Cannot place trades.</p>
+    </div>
+    <div id="chat-messages"><div class="msg system">Try: "Why did the bot not trade?" | "Open positions" | "Provider status"</div></div>
+    <div class="chat-input-row">
+      <input id="chat-input" placeholder="Ask the assistant..." />
+      <button class="btn btn-primary btn-sm" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+  <div id="toast"></div>
+  <div id="pd-sell-modal" class="pd-modal" hidden>
+    <div class="pd-modal-backdrop" onclick="pdCancelSellDemo()"></div>
+    <div class="pd-modal-card" role="dialog" aria-modal="true" aria-labelledby="pd-sell-title">
+      <h3 id="pd-sell-title">Close Demo Position</h3>
+      <p class="pd-modal-warn">Paper / demo only - no wallet, no signing, no live transaction.</p>
+      <div id="pd-sell-summary" class="pd-sell-summary mono"></div>
+      <div id="pd-sell-warning" class="pd-sell-warning" hidden></div>
+      <label class="pd-modal-label" for="pd-sell-reason">Close reason</label>
+      <select id="pd-sell-reason">
+        <option value="manual_take_profit">manual_take_profit</option>
+        <option value="manual_stop_loss">manual_stop_loss</option>
+        <option value="user_exit" selected>user_exit</option>
+        <option value="risk_reduction">risk_reduction</option>
+        <option value="testing">testing</option>
+        <option value="custom">custom note</option>
+      </select>
+      <label class="pd-modal-label" for="pd-sell-note">Note (optional)</label>
+      <input id="pd-sell-note" type="text" placeholder="Optional custom note" maxlength="240" />
+      <div class="pd-modal-actions">
+        <button type="button" class="btn btn-sm" onclick="pdCancelSellDemo()">Cancel</button>
+        <button type="button" class="btn btn-sm btn-primary" id="pd-sell-confirm-btn" onclick="pdConfirmSellDemo()">Confirm Sell Demo</button>
+      </div>
+    </div>
+  </div>
+  <script src="/static/system_config.js"></script>
+  <script src="/static/product_demo.js?v=ae18-autorefresh-60s-stage4g"></script>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    let clusterFilter = "";
+    let transparencyView = "passed";
+    let chatSessionId = null;
+    let charts = {};
+    const REFRESH_MS = 15000;
+
+    const fmt = {
+      usd: (n) => (n == null ? "-" : "$" + Number(n).toLocaleString("en", { maximumFractionDigits: 2 })),
+      pct: (n) => (n == null ? "-" : (Number(n) >= 0 ? "+" : "") + Number(n).toFixed(2) + "%"),
+      score: (n) => (n == null ? "-" : Number(n).toFixed(3)),
+      ts: (s) => (s ? new Date(s).toLocaleString() : "-"),
+      roi: (n) => (n == null ? "-" : (Number(n) * 100).toFixed(2) + "%"),
+    };
+
+    function toast(msg) {
+      const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2800);
+    }
+
+    async function api(url, method = "GET", body) {
+      try {
+        const opts = { method, headers: { "Content-Type": "application/json" } };
+        if (body !== undefined) opts.body = JSON.stringify(body);
+        const r = await fetch(url, opts);
+        if (!r.ok) throw new Error(await r.text() || r.status);
+        return await r.json();
+      } catch (e) {
+        console.error(e);
+        toast("Error: " + e.message);
+        return null;
+      }
+    }
+
+    function switchTab(name, btn) {
+      if (window.NavigationManager) {
+        window.NavigationManager.switchTo(name, btn);
+        return;
+      }
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+      document.querySelectorAll("nav.tabs button").forEach((b) => b.classList.remove("active"));
+      const el = document.getElementById("tab-" + name);
+      if (el) el.classList.add("active");
+      if (btn) btn.classList.add("active");
+    }
+
+    function ae12Kv(label, value) {
+      const v = value === undefined || value === null || value === "" ? "-" : value;
+      return `<div class="ae12-kv"><span>${label}</span><span title="${String(v)}">${v}</span></div>`;
+    }
+
+    function ae12ExampleCards(examplesByClass) {
+      const rows = [];
+      const classes = Object.keys(examplesByClass || {});
+      for (const klass of classes) {
+        const items = examplesByClass[klass] || [];
+        for (const ex of items.slice(0, 3)) {
+          const reason = String(ex.reasoning_short || ex.conflict_note || "").slice(0, 250);
+          const aid = String(ex.asset_id || ex.coin_id || "");
+          const trunc = aid.length > 28 ? aid.slice(0, 14) + "..." + aid.slice(-8) : aid;
+          rows.push([
+            escapeHtml(ex.symbol || "-"),
+            escapeHtml(ex.ui_label || klass),
+            escapeHtml(ex.raw_evidence_status || "-"),
+            escapeHtml(reason || "-"),
+            escapeHtml(trunc || "-"),
+          ]);
+        }
+      }
+      if (!rows.length) return "";
+      return `<div style="margin-top:.6rem;"><div class="ae12-warn" style="margin-bottom:.35rem;">Examples (readable cards; no raw JSON dump)</div>${ae12Table(
+        ["Symbol", "Class", "Evidence", "Reason (≤250)", "ID"],
+        rows
+      )}</div>`;
+    }
+
+    function ae12DistLines(dist) {
+      if (!dist || typeof dist !== "object") return "-";
+      return Object.entries(dist).map(([k, v]) => `${k}: ${v}`).join(" | ") || "-";
+    }
+
+    function ae12Table(headers, rows) {
+      if (!rows || !rows.length) return '<div class="empty">No rows</div>';
+      const th = headers.map((h) => `<th>${h}</th>`).join("");
+      const body = rows.map((r) => `<tr>${r.map((c) => `<td class="mono">${c ?? "-"}</td>`).join("")}</tr>`).join("");
+      return `<div class="table-wrap" style="max-height:280px;"><table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table></div>`;
+    }
+
+    async function loadAe12Tab(forceRefresh) {
+      const q = forceRefresh ? "?refresh=true" : "";
+      const statusEl = $("#ae12-load-status");
+      if (statusEl) statusEl.textContent = forceRefresh ? "Refreshing AE12 cache..." : "Loading AE12 panels...";
+
+      const ae12Settled = await Promise.allSettled([
+        api("/api/ae12/status" + q),
+        api("/api/ae12/runtime-collection" + (forceRefresh ? "?refresh=true" : "")),
+        api("/api/ae12/forward-evidence-summary" + q),
+        api("/api/ae12/missed-winners?limit=25" + (forceRefresh ? "&refresh=true" : "")),
+        api("/api/ae12/trade-vs-no-trade" + q),
+        api("/api/ae12/strict-vs-exploration" + q),
+        api("/api/ae12/qwen-linkage" + q),
+        api("/api/ae12/safety" + q),
+        api("/api/ae12/signal-taxonomy" + q),
+        api("/api/ae12/sentimentfix" + q),
+        api("/api/ae12/semantic-coin-classifier" + q),
+        api("/api/ae12/gemini-semantic-adjudication" + q),
+        api("/api/ae12/agents/ui-summary" + q),
+      ]);
+      const pick = (i) => (ae12Settled[i] && ae12Settled[i].status === "fulfilled" ? ae12Settled[i].value : null);
+      const status = pick(0);
+      const runtime = pick(1);
+      const forward = pick(2);
+      const missed = pick(3);
+      const tvnt = pick(4);
+      const strict = pick(5);
+      const qwen = pick(6);
+      const safety = pick(7);
+      const taxonomy = pick(8);
+      const sentimentfix = pick(9);
+      const semanticClassifier = pick(10);
+      const geminiAdjudication = pick(11);
+      const agentsUi = pick(12);
+
+      if (statusEl) {
+        statusEl.textContent = status?.latest_ae12_output_root
+          ? ("Root: " + status.latest_ae12_output_root)
+          : "AE12 root missing - panels may show MISSING";
+      }
+
+      const sb = $("#ae12-status-body");
+      if (sb && status) {
+        sb.innerHTML = [
+          ae12Kv("Latest AE12 output root", status.latest_ae12_output_root),
+          ae12Kv("Forward evidence gate", status.forward_evidence_gate),
+          ae12Kv("needs_persistence_fix", status.needs_persistence_fix),
+          ae12Kv("live_ready", status.live_ready),
+          ae12Kv("profitability_proven", status.profitability_proven),
+          ae12Kv("real_wallet_connected", status.real_wallet_connected),
+          ae12Kv("Mode", "paper/demo/exploration | research-only"),
+          `<div class="ae12-warn">Not live-approved | Not profitability-proven</div>`,
+        ].join("");
+      }
+
+      const rb = $("#ae12-runtime-body");
+      if (rb && runtime) {
+        rb.innerHTML = [
+          ae12Kv("Status", runtime.status),
+          ae12Kv("Latest collection timestamp", runtime.latest_runtime_collection_timestamp),
+          ae12Kv("Market snapshot count", runtime.market_snapshot_count),
+          ae12Kv("Sentiment/RSS count", runtime.sentiment_rss_count),
+          ae12Kv("Paper/demo evidence", JSON.stringify(runtime.paper_demo_evidence)),
+          ae12Kv("AE11 loop timestamp", runtime.ae11_loop_timestamp),
+          ae12Kv("AE11 older than DB collection", runtime.ae11_loop_older_than_db_collection),
+          runtime.warning ? `<div class="ae12-warn">${runtime.warning}</div>` : "",
+        ].join("");
+      }
+
+      const fb = $("#ae12-forward-body");
+      if (fb && forward) {
+        const matured = forward.matured_by_horizon || {};
+        const notMat = forward.not_matured_by_horizon || {};
+        const matRows = Object.keys(matured).map((h) => [h, matured[h], notMat[h], (forward.no_lookahead_by_horizon || {})[h]]);
+        fb.innerHTML = [
+          ae12Kv("Status", forward.status),
+          ae12Kv("Candidate evidence rows", forward.candidate_evidence_row_count),
+          ae12Kv("Missing data warnings", forward.missing_data_warning_count),
+          ae12Kv("Missed winners", forward.missed_winner_count),
+          `<div class="ae12-warn">Price freshness differs from horizon maturity. ${forward.missing_snapshot_warnings_note || ""}</div>`,
+          ae12Table(["Horizon", "Matured", "Not matured", "No-lookahead OK"], matRows),
+          `<div class="ae12-warn">${forward.warning || "forward returns are outcome labels only"}</div>`,
+        ].join("");
+      }
+
+      const mb = $("#ae12-missed-body");
+      if (mb && missed) {
+        const byH = missed.missed_winners_by_horizon || {};
+        const byRows = Object.keys(byH).map((h) => [h, byH[h]]);
+        const top = (missed.rows || []).slice(0, 15).map((r) => [
+          r.horizon, (r.max_return ?? 0).toFixed ? Number(r.max_return).toFixed(3) : r.max_return,
+          r.reason_for_no_trade || r.reason_not_traded, r.reason_recovery_status,
+          r.strict_shadow_decision, r.exploration_decision,
+        ]);
+        mb.innerHTML = [
+          ae12Kv("Total missed winners", missed.total_missed_winners),
+          ae12Table(["Horizon", "Count"], byRows),
+          ae12Table(["Horizon", "Max ret", "Reason", "Recovery", "Strict", "Exploration"], top),
+          `<div class="ae12-warn">${missed.warning || "missed winners are outcome labels only"}</div>`,
+        ].join("");
+      }
+
+      const tb = $("#ae12-tvnt-body");
+      if (tb && tvnt) {
+        const rows = (tvnt.by_horizon || []).map((r) => [
+          r.horizon, r.traded_count, r.not_traded_count,
+          r.median_forward_return_traded, r.median_forward_return_not_traded,
+          r.max_forward_return_traded, r.max_forward_return_not_traded, r.interpretation_status,
+        ]);
+        tb.innerHTML = [
+          ae12Kv("Traded", tvnt.traded_count),
+          ae12Kv("Not traded", tvnt.not_traded_count),
+          ae12Table(["Horizon", "Traded", "Not", "Med T", "Med NT", "Max T", "Max NT", "Interp"], rows),
+          `<div class="ae12-warn">${tvnt.explicit_warning || tvnt.warning || "outcome labels only, not profitability proof"}</div>`,
+        ].join("");
+      }
+
+      const stb = $("#ae12-strict-body");
+      if (stb && strict) {
+        const blockers = (strict.top_blockers || []).map((b) => [b.reason, b.count]);
+        stb.innerHTML = [
+          ae12Kv("Strict approved", strict.strict_approved),
+          ae12Kv("Strict blocked", strict.strict_blocked),
+          ae12Kv("Exploration-only trades", strict.exploration_only_trades),
+          ae12Table(["Blocker", "Count"], blockers),
+          `<div class="ae12-warn">${strict.explicit_note || strict.warning || "strict policy currently approves zero candidates"}</div>`,
+        ].join("");
+      }
+
+      const qb = $("#ae12-qwen-body");
+      if (qb && qwen) {
+        qb.innerHTML = [
+          ae12Kv("ROW_LINKED_AE9_RECORD", qwen.ROW_LINKED_AE9_RECORD),
+          ae12Kv("MENTION_ONLY", qwen.MENTION_ONLY),
+          ae12Kv("Ollama status", typeof qwen.ollama_status === "object" ? JSON.stringify(qwen.ollama_status) : qwen.ollama_status),
+          ae12Kv("NO_TRADE_AUTHORITY", qwen.NO_TRADE_AUTHORITY),
+          ae12Kv("llm_trade_authority_status", qwen.llm_trade_authority_status),
+          `<div class="ae12-warn">${qwen.warning || "Qwen/Gemini/Ollama do not create entries and are not trade authority"}</div>`,
+        ].join("");
+      }
+
+      const sab = $("#ae12-safety-body");
+      if (sab && safety) {
+        sab.innerHTML = [
+          ae12Kv("wallet_configured", safety.wallet_configured),
+          ae12Kv("private_key_accessed", safety.private_key_accessed),
+          ae12Kv("live_submission_status", safety.live_submission_status),
+          ae12Kv("live trading approval", safety.live_trading_approval),
+          ae12Kv("live_trading_ready", safety.live_trading_ready),
+          ae12Kv("profitability_proven", safety.profitability_proven),
+          ae12Kv("real_wallet_connected", safety.real_wallet_connected),
+          `<div class="ae12-warn">Live trading approval = NO. Paper/demo only.</div>`,
+        ].join("");
+      }
+
+      const txb = $("#ae12-taxonomy-body");
+      if (txb && taxonomy) {
+        txb.innerHTML = [
+          ae12Kv("legacy diagnostic only", taxonomy.legacy_diagnostic ?? true),
+          ae12Kv("final semantic classification", taxonomy.final_semantic_classification ?? false),
+          ae12Kv("Status", taxonomy.status),
+          ae12Kv("Decision gate", taxonomy.gate_status),
+          ae12Kv("semantic SOCIAL count", taxonomy.social_rows_found),
+          ae12Kv("semantic SOCIAL share", taxonomy.social_share),
+          ae12Kv("trading OPPORTUNISTIC count", taxonomy.opportunistic_rows_found),
+          ae12Kv("trading OPPORTUNISTIC share", taxonomy.opportunistic_share),
+          ae12Kv("UNKNOWN / UNCLASSIFIED count", taxonomy.unknown_rows_found),
+          ae12Kv("UNKNOWN / UNCLASSIFIED share", taxonomy.unknown_share),
+          ae12Kv("sticky opportunistic flag", taxonomy.sticky_flag_found),
+          ae12Kv("conflated taxonomy axis", taxonomy.conflated_axis_found),
+          ae12Kv("default fallback bug", taxonomy.default_fallback_bug_found),
+          ae12Kv("social linkage bug", taxonomy.social_linkage_bug_found),
+          ae12Kv("UI mapping bug", taxonomy.ui_mapping_bug_found),
+          `<div class="ae12-warn">${taxonomy.warning || "If no reliable semantic category exists, show UNKNOWN / UNCLASSIFIED - not opportunistic."}</div>`,
+        ].join("");
+      }
+
+      const sfb = $("#ae12-sentimentfix-body");
+      if (sfb && sentimentfix) {
+        sfb.innerHTML = [
+          ae12Kv("dual-axis repair only", sentimentfix.dual_axis_repair ?? true),
+          ae12Kv("final semantic classification", sentimentfix.final_semantic_classification ?? false),
+          ae12Kv("Phase", sentimentfix.phase || "AE12-SentimentFix"),
+          ae12Kv("Status", sentimentfix.status),
+          ae12Kv("Decision gate", sentimentfix.gate_status),
+          ae12Kv("Prior taxonomy gate", sentimentfix.prior_gate_status),
+          ae12Kv("semantic_unknown_share", sentimentfix.semantic_unknown_share),
+          ae12Kv("sentiment_records_count", sentimentfix.sentiment_records_count),
+          ae12Kv("sentiment_social_marker_rows", sentimentfix.sentiment_social_marker_rows),
+          ae12Kv("sticky still authoritative", sentimentfix.sticky_cluster_still_authoritative),
+          ae12Kv("soft-expiry plan created", sentimentfix.sticky_cluster_soft_expiry_plan_created),
+          ae12Kv("default fallback fixed (derived)", sentimentfix.default_fallback_fixed),
+          ae12Kv("semantic linkage gap", sentimentfix.semantic_linkage_gap_found),
+          ae12Kv("dual-axis mapper", sentimentfix.dual_axis_mapper_available),
+          ae12Kv("runtime future fields added", sentimentfix.runtime_future_fields_added),
+          ae12Kv("legacy_cluster_label preserved", sentimentfix.legacy_cluster_label_preserved),
+          ae12Kv("historical mutated", sentimentfix.historical_data_mutated),
+          ae12Kv("semantic distribution", ae12DistLines(sentimentfix.semantic_signal_family_distribution || {})),
+          ae12Kv("trading distribution", ae12DistLines(sentimentfix.trading_opportunity_state_distribution || {})),
+          ae12Kv("legacy distribution", ae12DistLines(sentimentfix.legacy_cluster_label_distribution || {})),
+          `<div class="ae12-warn">${sentimentfix.warning || "Legacy opportunistic/social shares are unreliable until dual-axis fields exist."}</div>`,
+        ].join("");
+      }
+
+      const scb = $("#ae12-semantic-classifier-body");
+      if (scb && semanticClassifier) {
+        scb.innerHTML = [
+          ae12Kv("local classifier only", semanticClassifier.local_classifier ?? true),
+          ae12Kv("final semantic classification", semanticClassifier.final_semantic_classification ?? false),
+          ae12Kv("Status", semanticClassifier.status),
+          ae12Kv("Gate", semanticClassifier.decision_gate?.status || semanticClassifier.decision_gate?.gate_status || semanticClassifier.gate_status),
+          ae12Kv("Unique assets found", semanticClassifier.unique_assets_found),
+          ae12Kv("Unique assets classified", semanticClassifier.unique_assets_classified),
+          ae12Kv("SOCIAL", `${semanticClassifier.social_count ?? 0} (${semanticClassifier.social_share ?? 0})`),
+          ae12Kv("NON_SOCIAL_OPPORTUNISTIC", `${semanticClassifier.non_social_opportunistic_count ?? 0} (${semanticClassifier.non_social_opportunistic_share ?? 0})`),
+          ae12Kv("NON_SOCIAL_INFRASTRUCTURE", `${semanticClassifier.non_social_infrastructure_count ?? 0} (${semanticClassifier.non_social_infrastructure_share ?? 0})`),
+          ae12Kv("UNKNOWN", `${semanticClassifier.unknown_count ?? 0} (${semanticClassifier.unknown_share ?? 0})`),
+          ae12Kv("MANUAL_REVIEW", `${semanticClassifier.manual_review_count ?? 0} (${semanticClassifier.manual_review_share ?? 0})`),
+          ae12Kv("Unknown reasons", ae12DistLines(semanticClassifier.unknown_reason_breakdown || {})),
+          ae12Kv("Classifier model/version", `${semanticClassifier.classifier_model || "N/A"} / ${semanticClassifier.classifier_version || "N/A"}`),
+          ae12Kv("Rubric version", semanticClassifier.rubric_version),
+          ae12Kv("Classifier safety status", semanticClassifier.classifier_safety_status),
+          ae12Kv("Cache key fields", (semanticClassifier.cache_key_fields || []).join(", ") || "-"),
+          ae12Kv("Cache key uses evidence_hash", semanticClassifier.cache_key_uses_evidence_hash),
+          ae12ExampleCards(semanticClassifier.examples_by_class || {}),
+          `<div class="ae12-warn">Local classifier is not trade authority. UNKNOWN is a coverage limitation; use Gemini adjudication for final SOCIAL vs OP.SUSPECTED counts.</div>`,
+        ].join("");
+      }
+
+      const gab = $("#ae12-gemini-adjudication-body");
+      if (gab && geminiAdjudication) {
+        const cc = geminiAdjudication.coin_level_counts || {};
+        const pc = geminiAdjudication.pair_asset_counts || {};
+        const opSus = geminiAdjudication.opportunistic_suspected_count ?? cc.coin_opportunistic_suspected_count ?? 0;
+        const opSusShare = geminiAdjudication.opportunistic_suspected_share ?? cc.coin_opportunistic_suspected_share ?? 0;
+        const notes = (geminiAdjudication.ui_notes || []).map((n) => `<div class="ae12-warn">${n}</div>`).join("");
+        gab.innerHTML = [
+          ae12Kv("final semantic adjudication", geminiAdjudication.final_semantic_adjudication ?? false),
+          ae12Kv("semantic reporting only", true),
+          ae12Kv("count level used for main UI", geminiAdjudication.count_level_used_for_main_ui || "coin_level"),
+          ae12Kv("Status", geminiAdjudication.status),
+          ae12Kv("Gate", geminiAdjudication.gate_status || geminiAdjudication.decision_gate?.status),
+          ae12Kv("safety audit", geminiAdjudication.safety_audit_status),
+          ae12Kv("unique coins found", cc.unique_coins_found ?? geminiAdjudication.unique_coins_found),
+          ae12Kv("SOCIAL CONFIRMED (coin)", `${geminiAdjudication.social_confirmed_count ?? 0} (${geminiAdjudication.social_confirmed_share ?? 0})`),
+          ae12Kv("OPPORTUNISTIC CONFIRMED (coin)", `${geminiAdjudication.non_social_opportunistic_confirmed_count ?? 0} (${geminiAdjudication.opportunistic_confirmed_share ?? 0})`),
+          `<div class="ae12-kv"><span>OP.SUSPECTED (coin)</span><span style="color:#e67e22;font-weight:600;" title="Suspected opportunistic - not confirmed">${opSus} (${opSusShare})</span></div>`,
+          ae12Kv("MANUAL REVIEW (coin)", `${geminiAdjudication.manual_review_count ?? 0} (${geminiAdjudication.manual_review_share ?? 0})`),
+          ae12Kv("pair assets (audit detail)", pc.unique_pair_assets_input ?? geminiAdjudication.unique_assets_input),
+          ae12Kv("pair SOCIAL (audit)", pc.pair_social_confirmed_count),
+          ae12Kv("pair OPPORTUNISTIC CONFIRMED (audit)", pc.pair_non_social_opportunistic_confirmed_count),
+          ae12Kv("pair OP.SUSPECTED (audit)", pc.pair_opportunistic_suspected_count),
+          ae12Kv("pair MANUAL REVIEW (audit)", pc.pair_manual_review_count),
+          ae12Kv("identity methods", ae12DistLines(geminiAdjudication.identity_resolution_method_distribution || {})),
+          ae12Kv("identity warnings", geminiAdjudication.identity_warning_count),
+          ae12Kv("conflicts", geminiAdjudication.conflict_count),
+          ae12Kv("raw evidence status", ae12DistLines(geminiAdjudication.raw_evidence_status_distribution || {})),
+          ae12Kv("Gemini model", geminiAdjudication.gemini_model),
+          ae12Kv("web grounding used", geminiAdjudication.web_grounding_used),
+          ae12Kv("model knowledge only count", geminiAdjudication.model_knowledge_only_count),
+          ae12Kv("trade authority used", false),
+          ae12Kv("external API used", geminiAdjudication.external_api_used),
+          (() => {
+            const d = geminiAdjudication.manual_review_drilldown || {};
+            if (!d.completed_locally) return ae12Kv("manual review drilldown", "not run");
+            const uc = d.updated_coin_level_counts || geminiAdjudication.coin_level_counts_after_drilldown || {};
+            return [
+              ae12Kv("manual review drilldown", "completed locally"),
+              ae12Kv("drilldown rule version", d.drilldown_rule_version),
+              ae12Kv("UNKNOWN_UNRESOLVED (after drilldown)", d.unknown_unresolved_count ?? uc.coin_unknown_unresolved_count),
+              ae12Kv("manual review remaining", d.manual_review_remaining_count ?? uc.coin_manual_review_remaining_count),
+              ae12Kv("SOCIAL after drilldown", uc.coin_social_confirmed_count),
+              ae12Kv("OPPORTUNISTIC CONFIRMED after drilldown", uc.coin_non_social_opportunistic_confirmed_count),
+              ae12Kv("OP.SUSPECTED after drilldown", uc.coin_opportunistic_suspected_count),
+              `<div class="ae12-warn">UNKNOWN_UNRESOLVED means unresolved without external evidence (not opportunistic, not social).</div>`,
+            ].join("");
+          })(),
+          ae12ExampleCards(geminiAdjudication.examples_by_class || {}),
+          notes || `<div class="ae12-warn">${geminiAdjudication.warning || ""}</div>`,
+        ].join("");
+      }
+
+      const agb = $("#ae12-agents-body");
+      if (agb && agentsUi) {
+        const link = agentsUi.linkage || {};
+        agb.innerHTML = [
+          ae12Kv("Panel", agentsUi.panel || "Intelligent Agent Layer"),
+          ae12Kv("Mode", agentsUi.mode),
+          ae12Kv("Qwen memo status", agentsUi.qwen_memo_status),
+          ae12Kv("Gemini audit status", agentsUi.gemini_audit_status),
+          ae12Kv("Helius enrichment status", agentsUi.helius_enrichment_status),
+          ae12Kv("RSS context status", agentsUi.rss_context_status),
+          ae12Kv("Semantic classification status", agentsUi.semantic_classification_status),
+          ae12Kv("Record count", agentsUi.record_count),
+          ae12Kv("Linked paper trades", link.linked_to_paper_trade_count),
+          ae12Kv("Linked missed winners", link.linked_to_missed_winner_count),
+          ae12Kv("Linked opportunities", link.linked_to_opportunity_count),
+          ae12Kv("Soft-veto recommendations", (agentsUi.soft_veto_recommendations || []).join(", ") || "-"),
+          ae12Kv("Warnings / blockers", (agentsUi.warnings_blockers || []).slice(0, 8).join(", ") || "-"),
+          ae12Kv("Strict vs exploration", agentsUi.strict_vs_exploration_note || "explanation only"),
+          ae12Kv("trade_authority_used", agentsUi.trade_authority_used === false ? "false" : agentsUi.trade_authority_used),
+          ae12Kv("wallet_status", agentsUi.wallet_status || "NOT_CONFIGURED"),
+          ae12Kv("live_ready", agentsUi.live_ready === false ? "false" : agentsUi.live_ready),
+          ae12Kv("profitability_proven", agentsUi.profitability_proven === false ? "false" : agentsUi.profitability_proven),
+          `<div class="ae12-warn">AE12.7 agent outputs are audit/explanation/context/soft-warning only. They do not authorize live trades. Paper/demo may continue.</div>`,
+        ].join("");
+      }
+    }
+
+    function clusterPill(label) {
+      if (!label) return '<span class="cluster">UNKNOWN</span>';
+      const upper = String(label).toUpperCase();
+      if (upper.includes("UNKNOWN") || upper.includes("UNCLASSIFIED")) {
+        return `<span class="cluster" title="${label}">UNKNOWN</span>`;
+      }
+      const isSocial = upper.includes("SOCIAL");
+      if (isSocial) {
+        return `<span class="cluster social" title="${label}">SOCIAL</span>`;
+      }
+      if (upper.includes("OPPORTUNISTIC") || upper.includes("SPECULATIVE")) {
+        return `<span class="cluster spec" title="${label}">OPPORTUNISTIC</span>`;
+      }
+      // Missing/ambiguous labels must not default to opportunistic
+      return `<span class="cluster" title="${label}">UNCLASSIFIED</span>`;
+    }
+
+    function setTransparencyView(mode, btn) {
+      transparencyView = mode;
+      document.querySelectorAll("#transparency-filters .filter-chip").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const clusterBar = $("#cluster-filters");
+      if (clusterBar) clusterBar.style.display = mode === "passed" ? "flex" : "none";
+      $("#market-table-title").textContent = mode === "passed"
+        ? "Passed Filter - Clean Research Data"
+        : "Dropped/Raw Filter - Audit Log";
+      $("#market-table-sub").textContent = mode === "passed"
+        ? "Tokens that passed liquidity + whale-score gates"
+        : "Rejected tokens with explicit drop reasons";
+      loadMarketTable();
+    }
+
+    function setClusterFilter(btn, cluster) {
+      document.querySelectorAll("#cluster-filters .filter-chip").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      clusterFilter = cluster;
+      loadMarketTable();
+    }
+
+    async function loadWatchlist() {
+      const data = await api("/api/watchlist");
+      const tbody = $("#watchlist-tbody");
+      if (!tbody) return;
+      const items = data?.items || [];
+      if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty">No manual watchlist entries - add a contract above.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = items.map((w) => {
+        const addr = (w.contract_address || "").replace(/'/g, "");
+        const untrusted = !w.last_analyzed_at || w.filter_note === "bypassed_standard_filters";
+        return `<tr class="${untrusted ? "watchlist-row-untrusted" : ""}">
+          <td class="mono addr" title="${addr}" onclick="navigator.clipboard.writeText('${addr}');toast('Copied')">${addr.slice(0, 14)}...</td>
+          <td>${w.chain || "-"}</td>
+          <td><strong>${escapeHtml(w.symbol || "-")}</strong></td>
+          <td>${clusterPill(w.cluster_label || "")}</td>
+          <td style="font-weight:600;color:${w.last_decision === "BUY" ? "var(--green)" : w.last_decision === "SELL" ? "var(--red)" : "var(--muted)"}">${escapeHtml(w.last_decision || "-")}</td>
+          <td class="mono">${w.whale_score != null ? fmt.score(w.whale_score) : "-"}</td>
+          <td class="mono" style="color:var(--muted);font-size:.65rem">${fmt.ts(w.added_at)}</td>
+          <td style="font-size:.65rem;color:var(--amber)">${w.analysis_error ? escapeHtml(w.analysis_error) : (w.filter_note || (w.last_analyzed_at ? "analyzed" : "pending"))}</td>
+        </tr>`;
+      }).join("");
+    }
+
+    function escapeHtml(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+    function contractCell(addr) {
+      const a = (addr || "").replace(/'/g, "");
+      if (!a) return "-";
+      return `<td class="mono addr" title="${escapeHtml(a)}" onclick="navigator.clipboard.writeText('${a}');toast('Copied')">${escapeHtml(a)}</td>`;
+    }
+
+    const MARKET_COL_COUNT = 13;
+
+    function marketTableHeadHtml() {
+      return `<tr>
+        <th>Time</th><th>Contract</th><th>Symbol</th><th>Network</th><th>Cluster</th><th>Whale Score</th>
+        <th>Alert</th><th>Buy Ratio</th><th>Vol 24h</th><th>Liquidity</th><th>Δ1h</th><th>Δ24h</th><th>Drop Reason</th>
+      </tr>`;
+    }
+
+    function renderMarketRow(r, opts = {}) {
+      const score = parseFloat(r.whale_score) || 0;
+      const addr = r.contract_address || r.token_contract_address || "";
+      const alert = r.alert_type || r.alert || opts.alert || "-";
+      const dropReason = r.drop_reason != null && r.drop_reason !== ""
+        ? r.drop_reason
+        : (opts.dropReason ?? "-");
+      const pc1h = r.price_change_1h;
+      const pc24 = r.price_change_24h;
+      const liq = r.liquidity_usd ?? r.liquidity_usd_at_trade;
+      const vol = r.volume_24h ?? r.volume_24h_at_trade;
+      const buyRatio = r.buy_ratio;
+      return `<tr>
+        <td class="mono" style="color:var(--muted)">${fmt.ts(r.timestamp)}</td>
+        ${contractCell(addr)}
+        <td><strong>${escapeHtml(r.symbol || "?")}</strong></td>
+        <td>${escapeHtml(r.network || "-")}</td>
+        <td>${clusterPill(r.cluster_label || "")}</td>
+        <td><span class="score-bar"><span class="score-fill" style="width:${Math.round(score * 100)}%"></span></span><span class="mono">${fmt.score(score)}</span></td>
+        <td style="color:var(--amber);font-size:.68rem">${escapeHtml(alert)}</td>
+        <td class="mono">${fmt.score(buyRatio)}</td>
+        <td class="mono">${fmt.usd(vol)}</td>
+        <td class="mono">${fmt.usd(liq)}</td>
+        <td class="mono" style="color:${Number(pc1h) >= 0 ? "var(--green)" : "var(--red)"}">${pc1h != null ? fmt.pct(pc1h) : "-"}</td>
+        <td class="mono" style="color:${Number(pc24) >= 0 ? "var(--green)" : "var(--red)"}">${pc24 != null ? fmt.pct(pc24) : "-"}</td>
+        <td class="drop-reason">${escapeHtml(dropReason)}</td>
+      </tr>`;
+    }
+
+    async function loadMarketTable() {
+      $("#market-thead").innerHTML = marketTableHeadHtml();
+      const tbody = $("#whale-tbody");
+
+      if (transparencyView === "dropped") {
+        const raw = await api("/api/tokens/raw");
+        const rows = raw?.dropped || [];
+        $("#whale-count").textContent = rows.length + " dropped";
+        if (!rows.length) {
+          tbody.innerHTML = `<tr><td colspan="${MARKET_COL_COUNT}" class="empty">No dropped tokens in last scan yet.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = rows.map((r) => renderMarketRow(r)).join("");
+        return;
+      }
+
+      const raw = await api("/api/tokens/raw");
+      let rows = raw?.passed || [];
+      if (raw?.storage) {
+        $("#stat-db-coins").textContent = raw.storage.coins?.rows ?? "-";
+        $("#stat-db-snaps").textContent = raw.storage.market_snapshots?.rows ?? "-";
+      }
+      if (clusterFilter) {
+        rows = rows.filter((r) => (r.cluster_label || "").toUpperCase() === clusterFilter.toUpperCase());
+      }
+      $("#whale-count").textContent = rows.length + " passed";
+      if (!rows.length) {
+        const whale = await api("/api/whale-log?limit=80" + (clusterFilter ? "&cluster=" + encodeURIComponent(clusterFilter) : ""));
+        if (whale?.rows?.length) {
+          $("#whale-count").textContent = whale.count + " whale events (fallback)";
+          tbody.innerHTML = whale.rows.map((r) => renderMarketRow(r, { dropReason: "PASSED" })).join("");
+          return;
+        }
+        tbody.innerHTML = `<tr><td colspan="${MARKET_COL_COUNT}" class="empty">No passed tokens yet - wait for next scan cycle.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map((r) => renderMarketRow(r, { dropReason: "PASSED" })).join("");
+    }
+
+    async function loadWhaleLog() {
+      await loadMarketTable();
+    }
+
+    async function loadTrainingDatasetStatus() {
+      const el = $("#training-dataset-body");
+      const sub = $("#training-dataset-sub");
+      if (!el) return;
+      const [dSettled, bsSettled] = await Promise.allSettled([
+        api("/api/debug/training-dataset"),
+        api("/api/debug/training-dataset/build-status"),
+      ]);
+      const d = dSettled.status === "fulfilled" ? dSettled.value : null;
+      const bs = bsSettled.status === "fulfilled" ? bsSettled.value : null;
+      if (!d && !bs) {
+        el.textContent = "Could not load training dataset status.";
+        return;
+      }
+      const pct = (v) => v != null ? (v * 100).toFixed(1) + "%" : "-";
+      const fmtTime = (v) => v ? new Date(v).toLocaleString() : "-";
+      let html = "";
+      if (bs) {
+        const auto = bs.auto_build_enabled ? "enabled" : "disabled";
+        const run = bs.is_running ? "running" : "idle";
+        const ok = bs.last_success === true ? "success" : (bs.last_success === false ? "failed" : "-");
+        html += `
+          <div style="margin-bottom:.75rem;padding:.5rem .65rem;background:var(--surface2);border-radius:8px;">
+            <div>Auto-build: <strong>${auto}</strong> | Build: <strong>${run}</strong> | Last: <strong>${ok}</strong></div>
+            <div>Last finished: ${fmtTime(bs.last_finished_at)} | Next scheduled: ${fmtTime(bs.next_scheduled_build_at)}</div>
+          </div>`;
+        if (sub) sub.textContent = "Scheduler " + auto + (bs.is_running ? " | build running" : "");
+      }
+      if (!d || d.status === "not_built_yet") {
+        html += `<div style="color:var(--yellow);">${d?.message || "No dataset summary yet."}</div>`;
+        el.innerHTML = html;
+        return;
+      }
+      if (sub && !bs) sub.textContent = "Last build: " + fmtTime(d.build_timestamp);
+      html += `
+        <div class="stats" style="margin-bottom:.75rem;">
+          <div class="stat"><div class="label">Model-ready rows</div><div class="value">${d.rows_model_ready ?? 0}</div></div>
+          <div class="stat"><div class="label">Pending outcomes</div><div class="value">${d.pending_outcome_rows ?? 0}</div></div>
+          <div class="stat"><div class="label">Signals total</div><div class="value">${d.rows_signal_total ?? 0}</div></div>
+          <div class="stat"><div class="label">LLM decisions</div><div class="value">${d.rows_llm_total ?? 0}</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.5rem;">
+          <div><strong>15m ready</strong><br>signals ${d.rows_signal_ready_15m ?? 0} | llm ${d.rows_llm_ready_15m ?? 0}</div>
+          <div><strong>1h ready</strong><br>signals ${d.rows_signal_ready_1h ?? 0} | llm ${d.rows_llm_ready_1h ?? 0}</div>
+          <div><strong>4h ready</strong><br>signals ${d.rows_signal_ready_4h ?? 0} | llm ${d.rows_llm_ready_4h ?? 0}</div>
+        </div>
+        <div>Positive return rate (15m / 1h / 4h): ${pct(d.positive_rate_15m)} / ${pct(d.positive_rate_1h)} / ${pct(d.positive_rate_4h)}</div>
+        <div>Profitable after fees (15m / 1h / 4h): ${pct(d.profitable_after_fees_rate_15m)} / ${pct(d.profitable_after_fees_rate_1h)} / ${pct(d.profitable_after_fees_rate_4h)}</div>
+      `;
+      el.innerHTML = html;
+    }
+
+    function setAe12SemanticCards(counts, meta) {
+      const cards = $("#ae12-semantic-cards");
+      const unavailable = $("#ae12-sem-unavailable");
+      const gateEl = $("#ae12-semantic-gate");
+      if (cards) cards.style.display = "grid";
+      if (unavailable) unavailable.style.display = "none";
+      const set = (id, v) => { const el = $(id); if (el) el.textContent = v ?? "-"; };
+      set("#ae12-stat-social", counts.coin_social_confirmed_count);
+      set("#ae12-stat-opp-confirmed", counts.coin_non_social_opportunistic_confirmed_count);
+      set("#ae12-stat-op-suspected", counts.coin_opportunistic_suspected_count);
+      set("#ae12-stat-unknown", counts.coin_unknown_unresolved_count);
+      set("#ae12-stat-unique", counts.unique_coins_found);
+      set("#ae12-stat-infra", counts.coin_non_social_infrastructure_confirmed_count);
+      set("#ae12-stat-manual-remaining", counts.coin_manual_review_remaining_count);
+      if (gateEl) gateEl.textContent = "Gate: " + (meta.gate_status || "-");
+      const srcLabel = $("#ae13-semantic-source-label");
+      if (srcLabel) {
+        srcLabel.textContent = meta.semantic_source_label
+          || (meta.source && String(meta.source).includes("Runtime")
+            ? meta.source
+            : "Semantic Source: Static AE12 Snapshot");
+      }
+      const metaBox = $("#ae12-semantic-meta");
+      if (metaBox && meta.subtitle) {
+        metaBox.innerHTML = `<strong id="ae13-semantic-source-label">${escapeHtml(meta.semantic_source_label || "Semantic Source: Static AE12 Snapshot")}</strong>
+          | ${escapeHtml(meta.subtitle)}
+          Pair-level adjudications are audit detail only.
+          <span class="gate" id="ae12-semantic-gate">Gate: ${escapeHtml(meta.gate_status || "-")}</span>
+          | Reporting only - not trade authority.
+          | UNKNOWN_UNRESOLVED is not social and not opportunistic.
+          | OP.SUSPECTED is suspected, not confirmed opportunistic.
+          | Web grounding was unavailable in this run.`;
+      }
+    }
+
+    function applyAe13SemanticCoverage(cov) {
+      if (!cov) return;
+      const srcLabel = $("#ae13-semantic-source-label");
+      if (srcLabel) srcLabel.textContent = cov.semantic_source_label || "Semantic Source: Static AE12 Snapshot";
+      const rt = $("#ae13-semantic-runtime-meta");
+      const c = cov.ui_counters || {};
+      if (rt) {
+        rt.textContent =
+          `Runtime candidates seen: ${c.runtime_candidates_seen ?? "-"} | AE12 live classified: ${c.runtime_candidates_classified ?? 0}`
+          + ` | unresolved: ${c.runtime_candidates_unresolved ?? "-"}`
+          + ` | registry entries: ${c.cluster_registry_entries ?? "-"}`
+          + ` | Social sources: ${c.social_sources_available ? "available" : "unavailable"}`
+          + ` | Gemini: ${c.gemini_adjudication_mode || "reporting_only_static"}`
+          + ` | RSS→SOCIAL link: no`
+          + (c.latest_semantic_refresh_utc ? ` | Snapshot refresh: ${c.latest_semantic_refresh_utc}` : "");
+      }
+      const note = $("#ae13-social-zero-note");
+      const socialAudit = cov.social_confirmed_audit || {};
+      if (note && socialAudit.is_zero) {
+        note.style.display = "block";
+        const reasons = (socialAudit.explanation_reasons || []).slice(0, 3).join(" ");
+        note.textContent = "SOCIAL_CONFIRMED=0 explained: " + (reasons || socialAudit.social_sources_note || "insufficient social-source evidence.");
+      }
+    }
+
+    function clearAe12SemanticCards(reason) {
+      ["#ae12-stat-social", "#ae12-stat-opp-confirmed", "#ae12-stat-op-suspected",
+       "#ae12-stat-unknown", "#ae12-stat-unique", "#ae12-stat-infra", "#ae12-stat-manual-remaining"]
+        .forEach((id) => { const el = $(id); if (el) el.textContent = "-"; });
+      const cards = $("#ae12-semantic-cards");
+      const unavailable = $("#ae12-sem-unavailable");
+      if (cards) cards.style.display = "none";
+      if (unavailable) {
+        unavailable.style.display = "block";
+        unavailable.textContent = reason
+          || "AE12 final semantic coin counts unavailable. Legacy counters are diagnostic only.";
+      }
+      const gateEl = $("#ae12-semantic-gate");
+      if (gateEl) gateEl.textContent = "Gate: unavailable";
+    }
+
+    function pickAe12SemanticCounts(drill, gem) {
+      // Priority 1: manual-review drilldown post-drilldown counts (gate-checked)
+      if (
+        drill
+        && drill.status === "OK"
+        && (drill.gate_status === "PASS_WITH_UNKNOWN_UNRESOLVED"
+            || drill.gate_status === "PASS_MANUAL_REVIEW_REDUCED")
+        && drill.trade_authority_used === false
+        && drill.updated_coin_level_counts
+        && drill.updated_coin_level_counts.unique_coins_found != null
+      ) {
+        return {
+          counts: drill.updated_coin_level_counts,
+          meta: {
+            gate_status: drill.gate_status,
+            subtitle: "Final UI counts are deduplicated by coin/token identity after local manual-review drilldown.",
+            source: "manual-review-drilldown",
+          },
+        };
+      }
+      // Priority 2: gemini adjudication coin-level (prefer after-drilldown)
+      if (
+        gem
+        && gem.status === "OK"
+        && gem.trade_authority_used === false
+        && (gem.gate_status === "PASS_GEMINI_ADJUDICATION_READY"
+            || gem.gate_status === "PASS_WITH_OP_SUSPECTED_LIMITATION"
+            || (gem.manual_review_drilldown
+                && (gem.manual_review_drilldown.gate_status === "PASS_WITH_UNKNOWN_UNRESOLVED"
+                    || gem.manual_review_drilldown.gate_status === "PASS_MANUAL_REVIEW_REDUCED")))
+      ) {
+        const after = gem.coin_level_counts_after_drilldown;
+        const level = gem.count_level_used_for_main_ui;
+        if (after && after.unique_coins_found != null
+            && (level === "coin_level_after_drilldown" || level === "coin_level" || after)) {
+          return {
+            counts: after,
+            meta: {
+              gate_status: (gem.manual_review_drilldown && gem.manual_review_drilldown.gate_status)
+                || gem.gate_status,
+              subtitle: "Final UI counts are deduplicated by coin/token identity. After local manual-review drilldown.",
+              source: "gemini-after-drilldown",
+            },
+          };
+        }
+        const cc = gem.coin_level_counts;
+        if (cc && cc.unique_coins_found != null
+            && (level === "coin_level" || level === "coin_level_after_drilldown")) {
+          return {
+            counts: {
+              ...cc,
+              coin_unknown_unresolved_count: gem.unknown_unresolved_count ?? cc.coin_unknown_unresolved_count ?? 0,
+              coin_manual_review_remaining_count: cc.coin_manual_review_count ?? 0,
+            },
+            meta: {
+              gate_status: gem.gate_status,
+              subtitle: "Final UI counts are deduplicated by coin/token identity. Pre-drilldown coin-level counts.",
+              source: "gemini-pre-drilldown",
+            },
+          };
+        }
+      }
+      return null;
+    }
+
+    async function loadAnalyticsSummary() {
+      const d = await api("/api/analytics/summary");
+      if (!d) return;
+      if (d.model) $("#model-badge").textContent = d.model;
+      $("#stat-avg-whale").textContent = d.avg_whale_score != null ? fmt.score(d.avg_whale_score) : "-";
+
+      // AE13 semantic coverage (static vs runtime) - honest source label
+      let ae13Sem = null;
+      try { ae13Sem = await api("/api/ae13/semantic-coverage"); } catch (e) { ae13Sem = null; }
+      if (ae13Sem) applyAe13SemanticCoverage(ae13Sem);
+
+      // AE12 semantic cards: never invent; never silently use legacy as final.
+      let drill = null;
+      let gem = null;
+      try { drill = await api("/api/ae12/manual-review-drilldown"); } catch (e) { drill = null; }
+      try { gem = await api("/api/ae12/gemini-semantic-adjudication"); } catch (e) { gem = null; }
+      const picked = pickAe12SemanticCounts(drill, gem);
+      if (picked) {
+        if (ae13Sem && ae13Sem.semantic_source_label) {
+          picked.meta.semantic_source_label = ae13Sem.semantic_source_label;
+        } else {
+          picked.meta.semantic_source_label = "Semantic Source: Static AE12 Snapshot";
+        }
+        setAe12SemanticCards(picked.counts, picked.meta);
+      } else {
+        clearAe12SemanticCards(
+          "AE12 final semantic coin counts unavailable. Legacy counters are diagnostic only - not final AE12 semantic classification."
+        );
+        const srcLabel = $("#ae13-semantic-source-label");
+        if (srcLabel && ae13Sem) srcLabel.textContent = ae13Sem.semantic_source_label || "Semantic Source: Static AE12 Snapshot";
+      }
+
+      // Epistemic counters: never collapse System Verified + Legacy + Registry + Curated into one Social.
+      let semCounts = d.semantic_counts || null;
+      try {
+        if (!semCounts) semCounts = await api("/api/semantic/counts");
+      } catch (e) { semCounts = d.semantic_counts || null; }
+      const legacy = d.cluster_counts || {};
+      const ls = $("#stat-legacy-social");
+      const lo = $("#stat-legacy-opp");
+      const legacySocial = semCounts?.legacy_db_social_count
+        ?? semCounts?.legacy_socially_motivated_count
+        ?? legacy.SOCIALLY_MOTIVATED
+        ?? 0;
+      const legacyOpp = semCounts?.legacy_db_opportunistic_count
+        ?? semCounts?.legacy_opportunistic_speculative_count
+        ?? legacy.OPPORTUNISTIC_SPECULATIVE
+        ?? 0;
+      if (ls) ls.textContent = legacySocial;
+      if (lo) lo.textContent = legacyOpp;
+      const ss = $("#stat-sem-social");
+      const so = $("#stat-sem-opp");
+      const si = $("#stat-sem-insuff");
+      const sf = $("#stat-sem-failed");
+      if (ss) ss.textContent = semCounts?.system_verified_social_count ?? semCounts?.social_confirmed_count ?? 0;
+      if (so) so.textContent = semCounts?.system_verified_opportunistic_count ?? semCounts?.opportunistic_confirmed_count ?? 0;
+      if (si) si.textContent = semCounts?.system_verified_insufficient_evidence_count ?? semCounts?.insufficient_evidence_count ?? 0;
+      if (sf) sf.textContent = semCounts?.system_verified_classification_failed_count ?? semCounts?.classification_failed_count ?? 0;
+      const rs = $("#stat-registry-social");
+      const ro = $("#stat-registry-opp");
+      if (rs) rs.textContent = semCounts?.legacy_registry_social_count ?? semCounts?.legacy_registry_socially_motivated_count ?? 0;
+      if (ro) ro.textContent = semCounts?.legacy_registry_opportunistic_count ?? semCounts?.legacy_registry_opportunistic_speculative_count ?? 0;
+      const cs = $("#stat-curated-social");
+      const co = $("#stat-curated-opp");
+      const cu = $("#stat-curated-unknown");
+      const ce = $("#stat-curated-enabled");
+      if (cs) cs.textContent = semCounts?.curated_social_hypothesis_count ?? 0;
+      if (co) co.textContent = semCounts?.curated_opportunistic_hypothesis_count ?? 0;
+      if (cu) cu.textContent = semCounts?.curated_unknown_hypothesis_count ?? 0;
+      if (ce) ce.textContent = semCounts?.curated_targets_enabled ? "yes" : "no";
+      const legNote = $("#dash-legacy-note");
+      if (legNote) {
+        legNote.style.display = "block";
+        legNote.textContent = "System Verified Social/Opportunistic are semantic_verdicts only. Legacy DB, Registry, and Curated hypotheses are shown separately and are never summed into one Social count.";
+      }
+
+      const w = d.wallet || {};
+      $("#stat-equity").textContent = fmt.usd(w.total_equity_usd);
+      $("#stat-fees").textContent = fmt.usd(w.cumulative_total_fees);
+      const roi = d.paper_net_roi || {};
+      const portfolioRoi = roi.portfolio_roi_pct ?? d.portfolio_roi_pct;
+      $("#stat-net-roi").textContent = portfolioRoi != null
+        ? fmt.roi(portfolioRoi) + " portfolio"
+        : (roi.trade_count ? fmt.roi(roi.avg_net_roi_pct) + " avg trade" : "-");
+      if (d.invalid_trade_rows_excluded) {
+        $("#stat-net-roi").title = `${d.invalid_trade_rows_excluded} corrupted rows excluded from aggregates`;
+      }
+      $("#stat-open-pos").textContent = d.open_positions_count ?? w.open_positions_count ?? 0;
+      const pill = $("#mode-pill");
+      pill.textContent = w.trading_mode || "DEMO";
+      pill.classList.toggle("live", (w.trading_mode || "") === "LIVE");
+      updateModeButtons(w.trading_mode || "DEMO");
+      $("#last-refresh").textContent = "Updated " + new Date().toLocaleTimeString();
+    }
+
+    function updateModeButtons(mode) {
+      const isDemo = mode === "DEMO";
+      const demoBtn = $("#btn-mode-demo");
+      const liveBtn = $("#btn-mode-live");
+      if (demoBtn) {
+        demoBtn.classList.toggle("active", isDemo);
+        demoBtn.classList.remove("live-active");
+      }
+      if (liveBtn) {
+        liveBtn.classList.toggle("active", !isDemo);
+        liveBtn.classList.toggle("live-active", !isDemo);
+      }
+      const pill = $("#mode-pill");
+      if (pill) {
+        pill.textContent = mode;
+        pill.classList.toggle("live", !isDemo);
+      }
+    }
+
+    async function loadSentiment() {
+      const data = await api("/api/sentiment/matrix?limit=15");
+      const list = $("#sentiment-list");
+      if (!data?.items?.length) {
+        list.innerHTML = '<div class="empty">RSS unavailable</div>';
+        return;
+      }
+      const agg = data.aggregate_score ?? 0;
+      $("#sentiment-aggregate").textContent = agg.toFixed(3);
+      list.innerHTML = data.items.map((item) => {
+        const s = item.score ?? 0;
+        const cls = s > 0.05 ? "pos" : s < -0.05 ? "neg" : "neu";
+        return `<div class="sentiment-item"><div style="font-size:.78rem">${escapeHtml(item.headline)}</div><span class="sentiment-score ${cls}">${s>=0?"+":""}${s.toFixed(2)}</span></div>`;
+      }).join("");
+    }
+
+    async function loadWallet() {
+      const w = await api("/api/paper/wallet");
+      if (!w) return;
+      const src = $("#ae13-ledger-source");
+      if (src) {
+        src.textContent =
+          `Write SoT: paper_state.json | Read model: ${w.read_model || "virtual_ledger_view"}`
+          + ` | Merged orders/open/closed: ${w.merged_orders_count ?? "-"}/${w.merged_open_positions_count ?? "-"}/${w.merged_closed_trades_count ?? "-"}`
+          + ` | No wallet | No live | paper/demo only`;
+      }
+      $("#wallet-grid").innerHTML = `
+        <div class="wallet-card"><label style="color:var(--muted);font-size:.7rem">Starting Capital</label><div class="val mono" style="font-size:1.2rem;font-weight:700">${fmt.usd(w.starting_capital)}</div></div>
+        <div class="wallet-card"><label style="color:var(--muted);font-size:.7rem">Available Cash</label><div class="val mono" style="font-size:1.2rem;font-weight:700;color:var(--accent2)">${fmt.usd(w.cash_usd)}</div></div>
+        <div class="wallet-card"><label style="color:var(--muted);font-size:.7rem">Open Positions (write SoT)</label><div class="val mono" style="font-size:1.2rem;font-weight:700;color:var(--accent2)">${w.open_positions_count ?? 0}</div></div>
+        <div class="wallet-card"><label style="color:var(--muted);font-size:.7rem">Open Positions Value</label><div class="val mono" style="font-size:1.2rem;font-weight:700">${fmt.usd(w.positions_value_usd)}</div></div>
+        <div class="wallet-card"><label style="color:var(--muted);font-size:.7rem">Total Equity</label><div class="val mono" style="font-size:1.2rem;font-weight:700;color:var(--green)">${fmt.usd(w.total_equity_usd)}</div></div>
+        <div class="wallet-card"><label style="color:var(--muted);font-size:.7rem">Swap/DEX Fees (1.5%)</label><div class="mono">${fmt.usd(w.cumulative_swap_fees)}</div></div>
+        <div class="wallet-card"><label style="color:var(--muted);font-size:.7rem">Priority Fees</label><div class="mono">${fmt.usd(w.cumulative_priority_fees)}</div></div>
+        <div class="wallet-card"><label style="color:var(--muted);font-size:.7rem">Total Fees</label><div class="mono" style="color:var(--red)">${fmt.usd(w.cumulative_total_fees)}</div></div>
+        <div class="wallet-card"><label style="color:var(--muted);font-size:.7rem">Realized Net PnL</label><div class="mono">${fmt.usd(w.total_net_pnl)}</div></div>`;
+    }
+
+    async function loadPositionsTab() {
+      await loadWallet();
+      const settings = await api("/api/settings");
+      if (settings) $("#auto-exec").checked = settings.auto_execution_enabled !== false;
+      const modeRes = await api("/api/paper/mode");
+      if (modeRes) updateModeButtons(modeRes.trading_mode);
+
+      const writePositions = await api("/api/positions?status=open") || [];
+      let ledger = null;
+      try { ledger = await api("/api/ae13/demo-ledger?limit_orders=30&limit_positions=30&limit_trades=50"); } catch (e) { ledger = null; }
+
+      const vlvSum = $("#ae13-vlv-summary");
+      if (vlvSum && ledger) {
+        vlvSum.textContent =
+          `${ledger.source_of_truth_label || "Virtual Ledger View"}`
+          + ` | orders=${ledger.orders_count ?? (ledger.orders||[]).length}`
+          + ` | open=${ledger.open_positions_count ?? (ledger.open_positions||[]).length}`
+          + ` | closed=${ledger.closed_trades_count ?? (ledger.closed_trades||[]).length}`
+          + ` | paper/demo only | not live approved`;
+      }
+      const ordersBody = $("#ae13-orders-body");
+      if (ordersBody) {
+        const orders = (ledger && ledger.orders) || [];
+        ordersBody.innerHTML = orders.length ? orders.slice(0, 20).map((o) => `
+          <tr>
+            <td class="mono" style="font-size:.65rem">${escapeHtml(String(o.paper_order_id||"-").slice(0,12))}</td>
+            <td>${escapeHtml(o.symbol||"-")}</td><td>${escapeHtml(o.side||"-")}</td>
+            <td>${fmt.usd(o.notional_usd)}</td><td>${escapeHtml(o.status||"-")}</td>
+            <td style="font-size:.65rem;color:var(--muted)">${escapeHtml(o.source_layer||"-")}</td>
+          </tr>`).join("") : '<tr><td colspan="6" class="empty">No merged paper orders in Virtual Ledger View</td></tr>';
+      }
+
+      const sellSel = $("#sell-position-select");
+      if (sellSel) {
+        sellSel.innerHTML = '<option value="">Latest open position</option>' +
+          writePositions.map((p) => `<option value="${p.id}">#${p.id} ${p.symbol}</option>`).join("");
+      }
+
+      // Prefer write-SoT positions for close actions; append VLV archive opens as read-only
+      const tbody = $("#open-positions-body");
+      const vlvOpens = ((ledger && ledger.open_positions) || []).filter((p) => {
+        const id = String(p.position_id);
+        return !writePositions.some((w) => String(w.id) === id);
+      });
+      const writeRows = writePositions.map((p) => `
+        <tr>
+          <td class="mono">${p.id}</td><td><strong>${escapeHtml(p.symbol||"")}</strong></td><td>${escapeHtml(p.chain||"")}</td>
+          <td class="mono">${fmt.usd(p.entry_price)}</td><td>${fmt.usd(p.size_usd)}</td>
+          <td>${clusterPill(p.cluster_label)}${p.demo_acceptance_only ? ' <span style="font-size:.65rem;color:var(--muted)">demo_acceptance</span>' : ""}
+            <div style="font-size:.62rem;color:var(--muted)">legacy_paper_state</div></td>
+          <td><button class="btn btn-sm" onclick="closePos(${p.id})">Close</button></td>
+        </tr>`);
+      const archiveRows = vlvOpens.slice(0, 15).map((p) => `
+        <tr>
+          <td class="mono" style="font-size:.65rem">${escapeHtml(String(p.position_id||"-").slice(0,10))}</td>
+          <td><strong>${escapeHtml(p.symbol||"")}</strong></td><td>${escapeHtml(p.chain||"-")}</td>
+          <td class="mono">${fmt.usd(p.entry_price)}</td><td>${fmt.usd(p.size_usd || p.notional_usd)}</td>
+          <td><div style="font-size:.62rem;color:var(--muted)">${escapeHtml(p.source_layer||"archive")} | display-only</div></td>
+          <td style="font-size:.65rem;color:var(--muted)">archive</td>
+        </tr>`);
+      tbody.innerHTML = (writeRows.length || archiveRows.length)
+        ? writeRows.concat(archiveRows).join("")
+        : '<tr><td colspan="7" class="empty">No open positions (write SoT or Virtual Ledger View)</td></tr>';
+
+      const writeTrades = await api("/api/trades?limit=50") || [];
+      const vlvTrades = (ledger && ledger.closed_trades) || [];
+      const trades = writeTrades.length ? writeTrades : vlvTrades;
+      $("#trades-body").innerHTML = trades.length ? [...trades].slice(0, 50).reverse().map((t) => `
+        <tr>
+          <td class="mono" style="color:var(--muted)">${fmt.ts(t.timestamp)}</td>
+          <td>${escapeHtml(t.side||"-")}</td><td>${escapeHtml(t.symbol||"-")}</td><td>${fmt.usd(t.notional_usd)}</td>
+          <td class="mono" style="color:var(--red)">${fmt.usd(t.total_fees)}</td>
+          <td>${String(t.side||"").toLowerCase()==="sell"?fmt.roi(t.net_roi_pct):"-"}</td>
+          <td style="font-size:.68rem;color:var(--muted)">${escapeHtml(t.reason_code||"-")}</td>
+          <td style="font-size:.62rem;color:var(--muted)">${escapeHtml(t.source_layer||t.source||"paper")}</td>
+        </tr>`).join("") : '<tr><td colspan="8" class="empty">No trades yet</td></tr>';
+    }
+
+    async function loadCharts() {
+      const d = await api("/api/analytics/charts");
+      if (!d) return;
+      Chart.defaults.color = "#7a8ba3";
+      Chart.defaults.borderColor = "#1e2a3d";
+      if (charts.clusters) charts.clusters.destroy();
+      charts.clusters = new Chart($("#chart-clusters"), {
+        type: "doughnut",
+        data: {
+          labels: d.cluster_labels.length ? d.cluster_labels : ["No data"],
+          datasets: [{ data: d.cluster_values.length ? d.cluster_values : [1], backgroundColor: ["#34d399","#f472b6","#3b82f6"] }],
+        },
+        options: { plugins: { legend: { position: "bottom" } }, maintainAspectRatio: false },
+      });
+      const pc = d.paper_charts || {};
+      if (charts.roi) charts.roi.destroy();
+      charts.roi = new Chart($("#chart-roi"), {
+        type: "line",
+        data: {
+          labels: pc.net_roi_labels?.length ? pc.net_roi_labels : ["-"],
+          datasets: [{ label: "Net ROI %", data: pc.net_roi_pct || [], borderColor: "#22d3ee", tension: 0.3, fill: false }],
+        },
+        options: { scales: { y: { ticks: { callback: (v) => v + "%" } } }, maintainAspectRatio: false },
+      });
+      const sc = d.sentiment_price_scatter || [];
+      if (charts.scatter) charts.scatter.destroy();
+      charts.scatter = new Chart($("#chart-scatter"), {
+        type: "scatter",
+        data: {
+          datasets: [
+            { label: "Social", data: sc.filter((p)=>p.cluster?.includes("SOCIAL")).map((p)=>({x:p.x,y:p.y})), backgroundColor: "#34d399" },
+            { label: "Speculative", data: sc.filter((p)=>p.cluster?.includes("OPPORTUNISTIC")).map((p)=>({x:p.x,y:p.y})), backgroundColor: "#f472b6" },
+          ],
+        },
+        options: {
+          scales: { x: { title: { display: true, text: "Price Δ24h %" } }, y: { title: { display: true, text: "Buy Ratio" }, min: 0, max: 1 } },
+          maintainAspectRatio: false,
+        },
+      });
+    }
+
+    async function setMode(mode) {
+      const r = await api("/api/paper/mode", "PUT", { mode });
+      if (!r) return;
+      updateModeButtons(r.trading_mode);
+      toast(r.message || ("Mode: " + r.trading_mode));
+      loadAnalyticsSummary();
+      loadTrainingDatasetStatus();
+      loadWallet();
+    }
+    async function resetWallet() {
+      if (!confirm("Reset demo wallet to $10,000?")) return;
+      await api("/api/paper/reset", "POST");
+      toast("Wallet reset");
+      loadPositionsTab();
+      loadAnalyticsSummary();
+      loadTrainingDatasetStatus();
+    }
+    async function toggleAutoExec() {
+      await api("/api/agent/auto-execution", "PUT", { enabled: $("#auto-exec").checked });
+      toast("Auto-execution updated");
+    }
+    async function manualBuy() {
+      const mode = await api("/api/paper/mode");
+      if (mode && mode.trading_mode !== "DEMO") {
+        toast("Switch to DEMO mode first");
+        return;
+      }
+      const r = await api("/api/demo/buy", "POST", { coin_id: 12345, cluster_label: "SOCIALLY_MOTIVATED" });
+      if (r?.position) {
+        toast(`BUY #${r.position.id} - cash ${fmt.usd(r.wallet?.cash_usd)}`);
+        loadPositionsTab();
+        loadAnalyticsSummary();
+      loadTrainingDatasetStatus();
+      }
+    }
+    async function manualSell() {
+      const mode = await api("/api/paper/mode");
+      if (mode && mode.trading_mode !== "DEMO") {
+        toast("Switch to DEMO mode first");
+        return;
+      }
+      const sel = $("#sell-position-select");
+      const posId = sel?.value ? parseInt(sel.value, 10) : null;
+      const r = await api("/api/demo/sell", "POST", { position_id: posId });
+      if (r?.closed) {
+        toast(`SELL closed #${r.closed.id} - net ROI ${fmt.roi(r.closed.net_roi_pct)} - cash ${fmt.usd(r.wallet?.cash_usd)}`);
+        loadPositionsTab();
+        loadAnalyticsSummary();
+      loadTrainingDatasetStatus();
+      }
+    }
+      async function closePos(id) {
+      const r = await api(`/api/positions/${id}/close`, "PUT", {
+        close_reason: "user_exit",
+        close_note: "legacy_position_manager",
+      });
+      if (r) {
+        const roi = r.net_roi_pct != null ? r.net_roi_pct : (r.closed && r.closed.net_roi_pct);
+        toast((r.message || ("Closed #" + id)) + " - net ROI " + fmt.roi(roi));
+        loadPositionsTab();
+        loadAnalyticsSummary();
+        if (typeof loadPortfolioTab === "function") loadPortfolioTab();
+        if (typeof loadDemoTradingTab === "function") loadDemoTradingTab();
+      }
+    }
+
+    async function addToWatchlist() {
+      const addr = $("#watchlist-address")?.value?.trim();
+      if (!addr) { toast("Enter a contract address"); return; }
+      const chain = $("#watchlist-chain")?.value || "solana";
+      $("#watchlist-status").textContent = "Saving & analyzing (filters bypassed)...";
+      await loadWatchlist();
+      const r = await api("/api/watchlist/add", "POST", {
+        contract_address: addr,
+        chain,
+        analyze_now: true,
+      });
+      if (!r) {
+        $("#watchlist-status").textContent = "Save failed - check server logs.";
+        return;
+      }
+      await loadWatchlist();
+      const a = r.analysis || {};
+      const dec = a.decision?.decision || r.watchlist_entry?.last_decision || "SAVED";
+      const cluster = a.cluster_label || "-";
+      const exec = a.execution || {};
+      $("#watchlist-status").innerHTML =
+        `Saved <span class="mono">${escapeHtml(addr.slice(0, 12))}...</span> | ` +
+        `cluster <strong>${cluster}</strong> | decision <strong>${dec}</strong> | ` +
+        `exec ${exec.ok ? "✓" : exec.error || "-"} | ` +
+        `open positions: ${a.wallet?.open_positions_count ?? "-"}`;
+      toast(`Watchlist: ${dec} on ${a.symbol || addr.slice(0, 8)}`);
+      $("#watchlist-address").value = "";
+      loadAnalyticsSummary();
+      loadTrainingDatasetStatus();
+      loadMarketTable();
+      if (document.getElementById("tab-positions").classList.contains("active")) loadPositionsTab();
+    }
+
+    async function refreshDashboard() {
+      const jobs = [];
+      if (typeof loadDemoTradingTab === "function") jobs.push(loadDemoTradingTab());
+      if (typeof loadAnalyticsSummary === "function") jobs.push(loadAnalyticsSummary());
+      if (typeof loadMarketTable === "function") jobs.push(loadMarketTable());
+      if (typeof loadSentiment === "function") jobs.push(loadSentiment());
+      if (typeof loadWatchlist === "function") jobs.push(loadWatchlist());
+      await Promise.allSettled(jobs);
+      toast("Refreshed");
+    }
+
+    $("#chat-toggle").onclick = () => $("#chat-panel").classList.toggle("open");
+    $("#chat-input").onkeydown = (e) => { if (e.key === "Enter") sendChat(); };
+
+    function appendMsg(text, role) {
+      const d = document.createElement("div");
+      d.className = "msg " + role;
+      d.textContent = text;
+      const box = $("#chat-messages");
+      box.appendChild(d);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendChat() {
+      const text = $("#chat-input").value.trim();
+      if (!text) return;
+      $("#chat-input").value = "";
+      appendMsg(text, "user");
+      const res = await api("/api/chat", "POST", { message: text, session_id: chatSessionId });
+      if (!res) { appendMsg("Chat failed.", "bot"); return; }
+      chatSessionId = res.session_id;
+      appendMsg(res.reply, "bot");
+      if (res.tools_used?.some((t) => ["update_settings", "demo_wallet", "cumulative_fees"].includes(t))) {
+        loadAnalyticsSummary();
+      loadTrainingDatasetStatus();
+        loadWallet();
+      }
+    }
+
+    refreshDashboard();
+    setInterval(() => {
+      const dash = document.getElementById("tab-dashboard");
+      if (dash && dash.classList.contains("active")) {
+        refreshDashboard();
+      }
+      const pos = document.getElementById("tab-positions");
+      if (pos && pos.classList.contains("active")) loadPositionsTab();
+      try { loadWatchlist(); } catch (_) { /* fail-soft */ }
+    }, REFRESH_MS);
+  </script>
+</body>
+</html>

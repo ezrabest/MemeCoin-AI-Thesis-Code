@@ -1,0 +1,65 @@
+﻿# Environment / secrets
+.env
+.env.*
+*.key
+*.pem
+*.crt
+*.p12
+credentials*.json
+secret*.json
+token*.json
+*api_key*
+*private_key*
+*mnemonic*
+*seed_phrase*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+.venv*/
+.venv-tabicl/
+venv/
+venv*/
+env/
+site-packages/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local databases and large data
+data/
+logs/
+outputs/
+runs/
+artifacts/
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+*.parquet
+*.feather
+*.csv
+*.jsonl
+
+# Model binaries / archives
+*.pkl
+*.pickle
+*.joblib
+*.onnx
+*.pt
+*.pth
+*.bin
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+
+# IDE / OS
+.vscode/
+.idea/
+.cursor/
+.DS_Store
+Thumbs.db

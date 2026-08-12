@@ -1,0 +1,98 @@
+{
+  "phase": "AE17",
+  "classification": "AE17_META_STACKING_LAYER_PASS_WITH_LIMITATIONS",
+  "created_at_utc": "2026-08-01T13:19:30.303738+00:00",
+  "output_root": "C:/Users/Shake/AppData/Local/Temp/tmp4uf60ntj/ae17_out",
+  "meta_engine_version": "ae17_meta_stacking_v1",
+  "ae16_discovery": {
+    "status": "AE17_INPUTS_DISCOVERED",
+    "searched_roots": [
+      "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z",
+      "data/audits/manual_tab16_direct_consensus_tier_check_20260724T212036Z",
+      "data/audits/manual_ae16_original_closure_audit_20260724T212124Z",
+      "data/audits/manual_ae16_tier_semantic_coverage_corrected_20260724T230109Z",
+      "data/audits/ae15_cleaned_for_ae16_20260722_194200",
+      "data/audits/ae16_model_evidence_bridge_completion_20260722_213752",
+      "data/audits/ae16_model_evidence_bridge_completion_20260722_214103",
+      "data/audits/ae16_model_evidence_bridge_completion_20260722_214344",
+      "data/audits/ae16_model_evidence_bridge_completion_debugrun",
+      "data/audits/ae16_model_evidence_bridge_completion_debugrun2",
+      "data/audits/ae16_tiered_consensus_engine_20260722_202855",
+      "data/audits/ae16b_combined_clean_universe_20260723_100640",
+      "data/audits/ae16c_dexscreener_refetch_validation_20260723_114158",
+      "data/audits/ae16c_dexscreener_refetch_validation_20260723_114211",
+      "data/audits/ae16c_dexscreener_refetch_validation_20260723_114235",
+      "data/audits/ae16c_rejected_target_recovery_20260723_130202",
+      "data/audits/ae16c_rejected_targets_canonicalized_20260723_123048",
+      "data/audits/ae16c_rejected_targets_rehydrated_20260723_122148",
+      "data/audits/ae16d_curated_clean_forward_overlay_20260723_133543",
+      "data/audits/ae16d_curated_clean_forward_overlay_20260723_133615",
+      "data/audits/ae16d_curated_clean_forward_overlay_20260723_133649",
+      "data/audits/ae16e_model_evidence_feature_parity_20260723_164003",
+      "data/audits/ae16f_serving_safe_model_evidence_20260723_170902",
+      "data/audits/manual_ae16_tier_semantic_coverage_20260724T225732Z",
+      "data/audits/manual_tab16_acceptance_verification_20260724T210927Z"
+    ],
+    "expected_patterns": [
+      "**/rf_xgb_tab16_consensus_preview.csv",
+      "**/ae16_clean_forward_consensus_decisions.csv",
+      "**/ae16_tiered_consensus_rows.csv",
+      "**/ae16f_tiered_consensus_rows.csv",
+      "**/rf_xgb_tab16_current_model_evidence.csv",
+      "**/ae16_model_evidence_attachment.csv",
+      "**/ae16f_model_evidence.csv"
+    ],
+    "missing_required_artifacts": [],
+    "found_candidate_artifacts": [
+      {
+        "kind": "consensus_rows",
+        "path": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z/data/rf_xgb_tab16_consensus_preview.csv",
+        "root": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z",
+        "score": 110
+      },
+      {
+        "kind": "model_evidence",
+        "path": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z/data/rf_xgb_tab16_current_model_evidence.csv",
+        "root": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z",
+        "score": 140
+      },
+      {
+        "kind": "consensus_rows",
+        "path": "data/audits/ae16_tiered_consensus_engine_20260722_202855/data/ae16_clean_forward_consensus_decisions.csv",
+        "root": "data/audits/ae16_tiered_consensus_engine_20260722_202855",
+        "score": 90
+      },
+      {
+        "kind": "model_evidence",
+        "path": "data/audits/ae16_tiered_consensus_engine_20260722_202855/data/ae16_model_evidence_attachment.csv",
+        "root": "data/audits/ae16_tiered_consensus_engine_20260722_202855",
+        "score": 120
+      },
+      {
+        "kind": "consensus_rows",
+        "path": "data/audits/ae16f_serving_safe_model_evidence_20260723_170902/data/ae16f_tiered_consensus_rows.csv",
+        "root": "data/audits/ae16f_serving_safe_model_evidence_20260723_170902",
+        "score": 70
+      },
+      {
+        "kind": "model_evidence",
+        "path": "data/audits/ae16f_serving_safe_model_evidence_20260723_170902/data/ae16f_model_evidence.csv",
+        "root": "data/audits/ae16f_serving_safe_model_evidence_20260723_170902",
+        "score": 40
+      }
+    ],
+    "selected_consensus_path": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z/data/rf_xgb_tab16_consensus_preview.csv",
+    "selected_evidence_path": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z/data/rf_xgb_tab16_current_model_evidence.csv",
+    "selected_root": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z",
+    "recommended_next_action": "Proceed with AE17 meta feature construction from selected AE16 consensus artifact.",
+    "notes": []
+  },
+  "files": {
+    "meta_feature_rows": "C:/Users/Shake/AppData/Local/Temp/tmp4uf60ntj/ae17_out/data/ae17_meta_feature_rows.csv",
+    "meta_shadow_outputs_csv": "C:/Users/Shake/AppData/Local/Temp/tmp4uf60ntj/ae17_out/data/ae17_meta_shadow_outputs.csv",
+    "meta_shadow_outputs_jsonl": "C:/Users/Shake/AppData/Local/Temp/tmp4uf60ntj/ae17_out/data/ae17_meta_shadow_outputs.jsonl",
+    "meta_layer_matrix": "C:/Users/Shake/AppData/Local/Temp/tmp4uf60ntj/ae17_out/data/ae17_meta_layer_matrix.csv",
+    "decision_gate": "C:/Users/Shake/AppData/Local/Temp/tmp4uf60ntj/ae17_out/reports/ae17_decision_gate.json"
+  },
+  "consensus_artifact_sha256": "878dbbaae77b496b6d38558f297225b853406eabdd445ac76c917105f9b0316a"
+}

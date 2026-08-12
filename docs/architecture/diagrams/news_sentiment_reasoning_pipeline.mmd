@@ -1,0 +1,23 @@
+flowchart TD
+    CT["Cointelegraph RSS"]
+    DC["Decrypt RSS"]
+    RAW["Raw RSS payload archive\n(SQLite raw_provider_payloads)"]
+    NORM["Headline / article normalization"]
+    SCORE["Sentiment scoring\n(lexicon [-1, 1])"]
+    RISK["Risk-keyword extraction\n(rug / hack / fraud / warning)"]
+    MATCH["Token / narrative matching"]
+    CTX["Candidate sentiment context"]
+    QW["Qwen reasoning memo"]
+    GEM["Optional Gemini audit"]
+    DEC["PAPER_BUY / WATCH / BLOCK explanation"]
+
+    CT --> RAW
+    DC --> RAW
+    RAW --> NORM
+    NORM --> SCORE
+    SCORE --> RISK
+    RISK --> MATCH
+    MATCH --> CTX
+    CTX --> QW
+    QW --> GEM
+    GEM --> DEC

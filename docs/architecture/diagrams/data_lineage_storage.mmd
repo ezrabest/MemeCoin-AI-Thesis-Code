@@ -1,0 +1,22 @@
+flowchart TD
+    RAW["Raw data\n(DexScreener, RSS, RPC, research inputs)"]
+    CANON["Canonical builder\n(single dataframe / table logic)"]
+    DF["Canonical dataframe / table"]
+    PQ["Parquet export"]
+    CSV["CSV export"]
+    SQL["SQLite mirror\n(runtime source of truth)"]
+    MAN["Manifest\n(content_hash, schema_hash, git_commit_hash)"]
+    REG["Artifact registry\n(future)"]
+    CONS["Consumers\n(runtime, research, UI, training)"]
+
+    RAW --> CANON
+    CANON --> DF
+    DF --> PQ
+    DF --> CSV
+    DF --> SQL
+    DF --> MAN
+    MAN --> REG
+    PQ --> REG
+    CSV --> REG
+    SQL --> REG
+    REG --> CONS

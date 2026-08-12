@@ -1,0 +1,33 @@
+{
+  "phase": "AE16",
+  "model_variant": "TAB16_DIRECT_TARGET_SERVING_SAFE",
+  "training_source": "data/training/manual_verified_datasets_direct_target_v1/LIQ_5K_HIGH_ACTIVITY_1h_TP20308_SL075_FEE0308_TIME_BY_HORIZON_DIRECT_TARGET_v1.parquet",
+  "training_rows": 51589,
+  "validation_rows": 11282,
+  "test_rows": 10927,
+  "feature_count": 26,
+  "feature_set_hash_sha256": "881b505b5549d11f904b637033cb973a2273ea10398e0afd277c34b0bb946bd2",
+  "ordered_feature_schema_hash_sha256": "cf7e23e16b6b307795979c98798b9a4ab7f09f18ee2b9ec936845d0f126469ab",
+  "threshold": 0.9928224834607726,
+  "threshold_policy": "historical_validation_top_5pct_quantile",
+  "estimator_class": "HistGradientBoostingClassifier",
+  "legacy_tab_used": false,
+  "validation_metrics": {
+    "n": 11282,
+    "positive_rate": 0.05805708207764581,
+    "score_min": 2.248777555641922e-06,
+    "score_max": 0.9999635031257692,
+    "score_p50": 3.5771038718897634e-06,
+    "score_p95": 0.9928224834607726,
+    "threshold": 0.9928224834607726,
+    "vote_true_rate": 0.05167523488743131,
+    "accuracy_at_threshold": 0.9735862435738344,
+    "profitability_claimed": false,
+    "note": "validation ranking/calibration metrics only; not a profitability claim",
+    "roc_auc": 0.9954109401589067,
+    "average_precision": 0.9302022433584183,
+    "brier_score": 0.018238927721988218
+  },
+  "split_method": "historical_split_column",
+  "has_event_timestamp": true
+}

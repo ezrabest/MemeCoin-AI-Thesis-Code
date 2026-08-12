@@ -1,0 +1,14 @@
+﻿.....................................                                    [100%]
+37 passed in 3.14s
+PYTEST_EXIT=0
+Phase E5 direct-target TabICL evaluation
+  mode:     smoke
+  input:    E:\Projects\Final Project\memecoin_trader\data\training\manual_verified_datasets_direct_target_v1
+  e4a:      E:\Projects\Final Project\memecoin_trader\data\training\manual_verified_results\phase_e4_direct_target_xgb_rf_full_20260630_195312
+  output:   E:\Projects\Final Project\memecoin_trader\data\training\manual_verified_results\phase_e5_direct_target_tabicl_20260703_202632
+  workers:  1
+  context:  max=75 sizes=(75,)
+  strategies: ('stratified_recent',)
+Successful jobs: 1
+Processed jobs: 1
+EVAL_EXIT=0

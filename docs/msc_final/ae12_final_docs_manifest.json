@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-07-15T15:44:18.760087+00:00",
+  "source_ae12_output_root": "data\\audits\\ae12_forward_evidence_maturation_20260714_235401",
+  "source_files_used": [
+    "data\\audits\\ae12_forward_evidence_maturation_20260714_235401\\reports\\ae12_forward_evidence_summary.json",
+    "data\\audits\\ae12_forward_evidence_maturation_20260714_235401\\reports\\ae12_final_system_readiness_gate.json",
+    "data\\audits\\ae12_forward_evidence_maturation_20260714_235401\\data\\ae12_trade_vs_no_trade_comparison.csv",
+    "data\\audits\\ae12_forward_evidence_maturation_20260714_235401\\data\\ae12_strict_vs_exploration_comparison.csv",
+    "data\\audits\\ae12_forward_evidence_maturation_20260714_235401\\audits\\ae12_wallet_safety_audit.json",
+    "E:\\Projects\\Final Project\\memecoin_trader\\data\\audits\\ae12_forward_evidence_maturation_20260714_235401\\reports\\ae12_forward_evidence_summary.json"
+  ],
+  "output_root": "docs\\msc_final",
+  "files_written": [
+    "docs\\msc_final\\ae12_final_system_report.md",
+    "docs\\msc_final\\ae12_architecture_summary.md",
+    "docs\\msc_final\\ae12_forward_evidence_results.md",
+    "docs\\msc_final\\ae12_ml_and_meta_layer_summary.md",
+    "docs\\msc_final\\ae12_intelligent_agent_layer_summary.md",
+    "docs\\msc_final\\ae12_limitations_and_future_work.md",
+    "docs\\msc_final\\ae12_demo_script.md"
+  ],
+  "note": "Values generated from AE12 artifacts; not hard-coded constants.",
+  "mutated_ae12_source": false,
+  "live_trading_ready": false,
+  "profitability_proven": false
+}

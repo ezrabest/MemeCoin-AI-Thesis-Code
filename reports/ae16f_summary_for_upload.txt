@@ -1,0 +1,25 @@
+phase: AE16F_SERVING_SAFE_DIRECT_TARGET_MODEL_EVIDENCE
+final_classification: AE16F_SERVING_SAFE_MODEL_EVIDENCE_PASS
+output_root: data/audits/ae16f_serving_safe_model_evidence_20260723_170902
+active_curated_targets: 45
+current_clean_forward_rows_used: 42
+toxic_pair_excluded: True
+selected_training_source: data/training/manual_verified_datasets_direct_target_v1/LIQ_5K_HIGH_ACTIVITY_1h_TP20308_SL075_FEE0308_TIME_BY_HORIZON_DIRECT_TARGET_v1.parquet
+selected_target_horizon: target/1h
+serving_safe_feature_count: 26
+exact_schema_alignment_passed: True
+feature_schema_hash: 0f2cbb980390db0ef702cfe2f4e995ed6f0644a207110dffc886aec56980f7be
+rf_trained: True evidence=42
+xgb_trained: True evidence=42
+tab_run: True evidence=42
+unavailable: []
+consensus_rows: 42
+tier_counts: {'MODEL_EVIDENCE_UNAVAILABLE': 41, 'SINGLE_MODEL_ONLY': 1}
+threshold_integrity_passed: True
+current_rows_used_for_threshold: false
+ae16_original_e6_closed: false
+trader_db_mutated: false
+wallet_connected: false
+live_trading_enabled: false
+backtest_run: false
+ae17_started: false

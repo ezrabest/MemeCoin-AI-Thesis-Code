@@ -1,0 +1,21 @@
+{
+  "rows_scanned_by_table": {
+    "signals": 50,
+    "market_snapshots": 138,
+    "raw_provider_payloads": 50,
+    "sentiment_records": 0,
+    "whale_alerts": 1050
+  },
+  "rows_loaded_by_table": {
+    "signals": 50,
+    "market_snapshots": 138,
+    "raw_provider_payloads": 50,
+    "sentiment_records": 0,
+    "whale_alerts": 1050
+  },
+  "max_records_enforced": 50,
+  "lookback_hours_enforced": 1.0,
+  "memory_safety_status": "PASS_BOUNDED_QUERIES",
+  "full_table_market_snapshots_load": false,
+  "bounded_query_count": 301
+}

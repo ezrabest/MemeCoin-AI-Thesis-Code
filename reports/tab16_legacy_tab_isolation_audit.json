@@ -1,0 +1,83 @@
+{
+  "legacy_tab_used": false,
+  "legacy_tab_artifact_path": null,
+  "allowed_to_replace_legacy_tab": false,
+  "alias_ae16f_tab_serving_safe_exists": false,
+  "tab16_artifact_path": "models/ae16_tab16_direct_target_serving_safe.joblib",
+  "legacy_artifacts": [
+    {
+      "path": "data/training/models/label_profitable_after_fees_1h_best.joblib",
+      "exists": true,
+      "mtime_ns": 1782073597288973200,
+      "size": 1415035,
+      "used_as_tab16": false,
+      "overwritten": false,
+      "rejected_as_tab16_source": true
+    },
+    {
+      "path": "data/training/models/label_profitable_after_fees_1h__hist_gradient_boosting.joblib",
+      "exists": true,
+      "mtime_ns": 1782073597243973200,
+      "size": 469450,
+      "used_as_tab16": false,
+      "overwritten": false,
+      "rejected_as_tab16_source": true
+    },
+    {
+      "path": "data/training/models/label_profitable_after_fees_1h__logistic_regression.joblib",
+      "exists": true,
+      "mtime_ns": 1782073591476753100,
+      "size": 7530,
+      "used_as_tab16": false,
+      "overwritten": false,
+      "rejected_as_tab16_source": true
+    },
+    {
+      "path": "data/training/models/label_profitable_after_fees_1h__random_forest.joblib",
+      "exists": true,
+      "mtime_ns": 1782073593635341900,
+      "size": 1409755,
+      "used_as_tab16": false,
+      "overwritten": false,
+      "rejected_as_tab16_source": true
+    },
+    {
+      "path": "data/training/models/label_profitable_after_fees_4h_best.joblib",
+      "exists": true,
+      "mtime_ns": 1782073609968149000,
+      "size": 1899995,
+      "used_as_tab16": false,
+      "overwritten": false,
+      "rejected_as_tab16_source": true
+    },
+    {
+      "path": "data/training/models/label_profitable_after_fees_4h__hist_gradient_boosting.joblib",
+      "exists": true,
+      "mtime_ns": 1782073609927150100,
+      "size": 469450,
+      "used_as_tab16": false,
+      "overwritten": false,
+      "rejected_as_tab16_source": true
+    },
+    {
+      "path": "data/training/models/label_profitable_after_fees_4h__logistic_regression.joblib",
+      "exists": true,
+      "mtime_ns": 1782073605509489000,
+      "size": 7530,
+      "used_as_tab16": false,
+      "overwritten": false,
+      "rejected_as_tab16_source": true
+    },
+    {
+      "path": "data/training/models/label_profitable_after_fees_4h__random_forest.joblib",
+      "exists": true,
+      "mtime_ns": 1782073607726127100,
+      "size": 1894715,
+      "used_as_tab16": false,
+      "overwritten": false,
+      "rejected_as_tab16_source": true
+    }
+  ],
+  "passed": true,
+  "legacy_files_mutated": []
+}

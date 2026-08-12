@@ -1,0 +1,27 @@
+flowchart LR
+    E0["E0\nArchitecture docs"]
+    E1["E1\nArtifact registry"]
+    E2["E2\nUnified candidate schema"]
+    E3["E3\nDirect target dataset"]
+    E4["E4\nDirect-target XGB/RF"]
+    E5["E5\nDirect-target TAB"]
+    E6["E6\nTiered consensus eval"]
+    E7["E7\nMeta-model / stacking"]
+    E8["E8\nContext intelligence"]
+    E9["E9\nQwen/Gemini layer"]
+    E10["E10\nRuntime integration"]
+    E11["E11\nUI integration"]
+    E12["E12\nQA / demo validation"]
+
+    E0 --> E1
+    E1 --> E2
+    E2 --> E3
+    E3 --> E4
+    E4 --> E5
+    E5 --> E6
+    E6 --> E7
+    E7 --> E8
+    E8 --> E9
+    E9 --> E10
+    E10 --> E11
+    E11 --> E12

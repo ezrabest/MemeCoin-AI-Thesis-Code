@@ -1,0 +1,787 @@
+Task: Phase E1 — Artifact Registry & Data-Lineage Foundation
+
+Continue from the current MemeCoin AI Trader codebase.
+
+Branch name recommendation:
+phase_e1_artifact_registry
+
+This branch follows the accepted Phase E0 architecture documentation package.
+
+Purpose:
+Build a safe, deterministic, file-based artifact registry and data-lineage foundation for research/model artifacts.
+
+This phase must create infrastructure for tracking artifacts, schemas, hashes, paths, lineage hints, and validation status.
+
+This phase must NOT change model behavior, trading behavior, runtime decision behavior, UI behavior, database schema, or existing research artifacts.
+
+This is not a Decision Gate.
+Do not reinterpret or change the project architecture.
+
+ANCHOR PLAN - DO NOT CHANGE
+
+The current Phase E Anchor Plan remains:
+
+1. Quantitative ranking:
+   XGB / TAB / RF
+
+2. Consensus economics:
+   Tier 1 = TAB_XGB_RF_ALL3
+   Tier 2 = TAB_RF_ONLY
+
+3. Context intelligence:
+   Solana / Helius / RSS / reputation / wallet-level whale intelligence
+
+4. Reasoning and audit:
+   Qwen operational reasoning
+   Gemini selective audit
+
+New branch findings are evidence only.
+They do not change architecture unless an explicit DECISION GATE is declared later.
+
+HARD CONSTRAINTS
+
+Do not rebuild from scratch.
+
+Do not modify live/demo trading behavior.
+Do not enable real trading.
+Do not modify risk settings.
+Do not modify model training code.
+Do not retrain RF, TAB, or XGB.
+Do not run heavy model sweeps.
+Do not generate new predictions.
+Do not regenerate datasets.
+Do not rerun exit simulations.
+Do not create or modify trades.
+Do not call Gemini.
+Do not call Qwen/Ollama.
+Do not call Helius.
+Do not call Solana RPC.
+Do not modify UI.
+Do not modify the main SQLite schema.
+Do not write to trader.db.
+Do not delete, move, overwrite, or modify existing research artifacts.
+Do not alter CSV/Parquet training outputs.
+Do not scan the entire project blindly.
+Do not scan .venv or .venv-tabicl.
+Do not treat this phase as a runtime integration task.
+
+This phase is registry / manifest / validation only.
+
+CORE DATA PRINCIPLE
+
+Never generate SQLite and CSV/Parquet independently from separate logic paths.
+
+The target future architecture is:
+
+canonical object/dataframe
+-> write artifacts
+-> register artifact metadata/lineage
+-> optionally mirror controlled metadata into SQLite in a later reviewed phase
+
+In Phase E1, implement only the file-based registry foundation.
+Do not implement SQLite mirroring yet.
+SQLite registry mirroring may be proposed for a later controlled E1B / Decision Gate, but not implemented here.
+
+EXPECTED NEW PACKAGE
+
+Create:
+
+app/artifacts/
+  __init__.py
+  hash_utils.py
+  manifest_schema.py
+  registry.py
+
+Create scripts:
+
+scripts/register_existing_artifacts.py
+scripts/validate_artifact_registry.py
+
+Create tests:
+
+tests/test_artifact_registry.py
+
+Create docs:
+
+docs/architecture/09_artifact_registry.md
+
+Update, only if present:
+
+docs/architecture/architecture_index.md
+
+REGISTRY OUTPUT LOCATIONS
+
+Registry files:
+
+data/training/artifact_registry/artifact_registry.jsonl
+data/training/artifact_registry/artifact_registry.csv
+data/training/artifact_registry/artifact_registry_summary.json
+
+Validation reports:
+
+data/audits/artifact_registry_validation_<timestamp>.json
+
+Use atomic writes for registry and report outputs.
+
+ARTIFACT RECORD SCHEMA
+
+Create a clear ArtifactRecord schema using dataclass or Pydantic, whichever is more consistent and lightweight in the current codebase.
+
+Required fields:
+
+artifact_id
+artifact_type
+phase
+branch_name
+logical_name
+
+project_root
+project_relative_path
+path_id
+path
+path_exists
+file_name
+extension
+size_bytes
+modified_time_ns
+modified_time_utc
+created_at_utc
+
+content_hash
+hash_status
+schema_hash
+
+row_count
+column_count
+columns
+raw_dtypes
+normalized_dtypes
+
+model
+filter
+horizon
+split
+target_name
+policy_name
+consensus_tier
+
+source_artifact_ids
+source_paths
+generated_by_script
+git_commit_hash
+
+notes
+warnings
+metadata
+
+Field behavior:
+
+- git_commit_hash must be nullable.
+- When .git is missing, do not fail. Set git_commit_hash = null and add warning GIT_METADATA_UNAVAILABLE.
+- row_count may be null for non-tabular files.
+- schema_hash may be null for non-tabular files.
+- columns may be empty for non-tabular files.
+- raw_dtypes and normalized_dtypes may be empty for non-tabular files.
+- metadata may contain file-specific details.
+- warnings must be a list of machine-readable warning codes or short strings.
+- Do not invent model/policy metadata when it cannot be inferred safely.
+- When metadata cannot be inferred safely, set it to null and add warning METADATA_NOT_INFERRED.
+
+ARTIFACT TYPES
+
+Support these artifact_type values:
+
+clean_model_input
+model_prediction
+exit_policy_sweep
+strict_policy_selection
+consensus_selected_trades
+direct_target_audit
+manifest
+summary_report
+architecture_doc
+onchain_audit
+settings_snapshot
+model_artifact
+policy_backtest
+unknown
+
+Use unknown only when no safer type can be inferred.
+
+PATH NORMALIZATION AND ARTIFACT ID STABILITY
+
+Do not build artifact_id from absolute paths.
+
+All paths must be normalized as project-relative POSIX-style paths.
+
+Example:
+
+data/training/manual_verified_results/xgb_clean_full/file.parquet
+
+Not:
+
+E:\Projects\Final Project\memecoin_trader\data\...
+
+Add and use these fields:
+
+project_root
+project_relative_path
+path_id
+logical_artifact_key
+content_hash
+artifact_id
+
+Definitions:
+
+project_root:
+- detected repository/project root
+- used only for computing relative paths
+- do not include it in artifact_id
+
+project_relative_path:
+- path relative to project root
+- use forward slashes
+- do not include drive letters
+- do not include machine-specific prefixes
+- stable across Windows/Linux when project layout is the same
+
+path_id:
+- sha256("path:v1|" + project_relative_path)
+- tracks the physical repository-relative file location
+
+content_hash:
+- sha256 of raw file bytes
+- identifies file content
+
+logical_artifact_key:
+- deterministic string from available semantic metadata:
+  phase + artifact_type + logical_name + model + filter + horizon + split + target_name + policy_name + consensus_tier
+- unknown components should be omitted or set to "unknown"
+- do not hallucinate metadata
+
+artifact_id:
+- sha256("artifact:v1|" + logical_artifact_key + "|" + content_hash)
+
+Important:
+- Lineage should prefer artifact_id/content_hash, not absolute file path.
+- Store project_relative_path for human traceability.
+- Store path_id separately for path-level duplicate detection.
+- Do not use absolute path in artifact_id.
+- artifact_id should remain stable across Windows-style and POSIX-style project roots when file content and logical metadata are the same.
+
+HASHING RULES
+
+Implement deterministic hash utilities.
+
+content_hash:
+- For ordinary files, hash raw file bytes with SHA-256.
+- For large files, stream in chunks.
+- Do not load entire large files into memory.
+- content_hash is required unless hashing failed or was skipped by explicit size limit.
+
+hash_status allowed values:
+- computed
+- reused_from_cache
+- failed
+- skipped_by_size_limit
+
+When content_hash is missing:
+- validation should emit ERROR unless the artifact has warning HASH_UNAVAILABLE or HASH_SKIPPED_BY_SIZE_LIMIT and hash_status explains why.
+
+schema_hash:
+- For CSV/Parquet tabular artifacts, hash normalized schema only.
+- Do not hash full row contents for schema_hash.
+- content_hash still covers the actual file bytes.
+
+HASH CACHING / SHORT-CIRCUIT HASHING
+
+The registry scanner must load the existing registry if present.
+
+Before recalculating expensive hashes, check whether the same project_relative_path already exists in the previous registry.
+
+If all of the following are unchanged:
+
+- size_bytes
+- modified_time_ns
+- extension
+- project_relative_path
+
+Then reuse the previous:
+
+- content_hash
+- schema_hash
+- row_count
+- column_count
+- columns
+- raw_dtypes
+- normalized_dtypes
+
+Do not recalculate file SHA-256.
+Do not reload the tabular file.
+Do not recompute row_count/schema_hash.
+
+Add CLI option:
+
+--force-rehash
+
+When --force-rehash is provided:
+- ignore hash cache
+- recompute content_hash and schema_hash
+
+Use stat().st_mtime_ns rather than low-precision modified time where available.
+
+Still write modified_time_utc for human readability.
+
+If cache reuse occurs:
+- hash_status = reused_from_cache
+- metadata.cache_reused = true
+
+If hash is recomputed:
+- hash_status = computed
+- metadata.cache_reused = false
+
+If hashing fails:
+- hash_status = failed
+- content_hash = null
+- add warning HASH_UNAVAILABLE
+- continue scanning other artifacts
+
+If hashing is skipped by size limit:
+- hash_status = skipped_by_size_limit
+- content_hash = null
+- add warning HASH_SKIPPED_BY_SIZE_LIMIT
+- continue scanning other artifacts
+
+SCHEMA HASH DTYPE NORMALIZATION
+
+For CSV/Parquet artifacts, store both raw and normalized dtypes.
+
+raw_dtypes:
+- exact dtype strings as reported by pandas/pyarrow reader
+
+normalized_dtypes:
+- stable dtype classes used for schema_hash
+
+Normalization rules:
+
+Integer dtypes:
+- int8, int16, int32, int64, nullable Int64 -> int64
+
+Unsigned integer dtypes:
+- uint8, uint16, uint32, uint64 -> uint64
+
+Float dtypes:
+- float16, float32, float64, nullable Float64 -> float64
+
+Boolean dtypes:
+- bool, boolean -> bool
+
+Datetime dtypes:
+- datetime64[ns], datetime64[us], timezone-aware datetime -> datetime64[ns]
+
+String-like dtypes:
+- string, object containing strings -> string_or_object
+
+Categorical:
+- category -> category
+
+Unknown/mixed/object:
+- object -> object
+
+schema_hash must be computed from:
+- ordered column names
+- normalized dtype strings
+
+Do not compute schema_hash from raw dtype strings alone.
+
+This prevents false schema changes caused by pandas/pyarrow/platform differences.
+
+Preserve raw_dtypes in metadata so real debugging remains possible.
+
+ATOMIC WRITES AND IDEMPOTENCE
+
+Registry writes must be atomic.
+
+Re-running registration must be idempotent.
+
+No duplicate artifact_id entries.
+
+No duplicate normalized project_relative_path entries unless explicitly versioned later.
+For Phase E1, duplicate paths should be validation errors.
+
+Prefer rewriting the registry deterministically from scanned records rather than appending duplicate rows.
+
+Sort registry deterministically by:
+phase
+artifact_type
+project_relative_path
+
+Do not modify source artifacts.
+
+SCANNING SCOPE
+
+Do not scan the entire project blindly.
+
+Scan only known research/documentation directories relevant to Phase E.
+
+Default scan roots:
+
+docs/architecture/
+
+data/training/manual_verified_datasets_clean_for_model/
+
+data/training/manual_verified_results/xgb_clean_full/
+data/training/manual_verified_results/exit_sim_xgb_full/
+
+data/training/manual_verified_results/exit_sim_fixed/
+data/training/manual_verified_results/rf_clean/
+
+data/training/manual_verified_results/phase_b_model_cuts_v5/
+data/training/manual_verified_results/phase_d_exit_target_audit_v4_from_v5/
+
+data/training/policy_backtests/
+data/training/models/
+
+Skip:
+- .venv
+- .venv-tabicl
+- __pycache__
+- .pytest_cache
+- cache folders
+- raw provider payloads
+- runtime logs, unless explicitly under data/audits and small enough
+- trader.db
+- large runtime SQLite files
+- node_modules if present
+- browser/cache/temp folders
+
+Missing scan roots should produce warnings, not failures.
+
+Corrupt/unreadable files should produce artifact-level warnings, not crash the full run.
+
+REGISTER EXISTING ARTIFACTS SCRIPT
+
+Create:
+
+scripts/register_existing_artifacts.py
+
+It should support:
+
+--dry-run
+--output-dir
+--include-root repeatable
+--registry-path
+--write-csv
+--write-summary
+--max-file-size-mb
+--force-rehash
+--verbose
+
+Default behavior without --dry-run:
+- scan default roots
+- write registry JSONL
+- write CSV if --write-csv is provided
+- write summary JSON if --write-summary is provided
+- use cache from existing registry when available
+- write atomically
+
+Dry-run behavior:
+- scan and print planned counts
+- print sample records
+- do not write registry files
+- do not write validation reports
+- do not modify any artifacts
+
+Summary JSON should include:
+
+total_artifacts
+count_by_artifact_type
+count_by_phase
+count_by_model
+count_by_filter
+count_by_horizon
+count_by_split
+count_by_hash_status
+warnings_count
+errors_count
+created_at_utc
+registry_path
+scan_roots
+git_commit_hash_or_null
+
+VALIDATION SCRIPT
+
+Create:
+
+scripts/validate_artifact_registry.py
+
+It should support:
+
+--registry-path
+--report-path
+--fail-on-error
+--verbose
+
+Validation checks:
+
+- Registry file exists.
+- Every path exists.
+- No duplicate artifact_id.
+- No duplicate project_relative_path.
+- No duplicate path_id.
+- artifact_id present.
+- project_relative_path present.
+- path_id present.
+- hash_status valid.
+- content_hash present for file artifacts unless hash_status explains failure/skip.
+- schema_hash present for readable CSV/Parquet tabular artifacts unless schema reading failed with warning.
+- row_count present for readable CSV/Parquet tabular artifacts unless schema reading failed with warning.
+- raw_dtypes and normalized_dtypes present for readable CSV/Parquet tabular artifacts.
+- source paths, if declared, exist or are explicitly warning-marked.
+- .git absence does not fail validation.
+- generated report includes counts by artifact_type, phase, model, filter, horizon, split, and hash_status.
+- errors and warnings are separated.
+- validation report is JSON.
+- --fail-on-error exits nonzero only when errors exist.
+
+Validation report structure:
+
+status
+created_at_utc
+registry_path
+total_records
+errors
+warnings
+counts
+sample_records
+notes
+
+Allowed validation status:
+ok
+warning
+error
+
+LINEAGE SUPPORT
+
+In Phase E1, do not attempt to infer every lineage relationship perfectly.
+
+Allowed:
+- Infer obvious lineage from filenames and directories.
+- Add source_paths where obvious.
+- Leave source_artifact_ids empty when lineage is not deterministic.
+
+When lineage cannot be safely inferred:
+- source_artifact_ids = []
+- source_paths = []
+- add warning LINEAGE_NOT_INFERRED
+
+Do not hallucinate lineage.
+
+For Phase B / D1 files:
+- register them as artifacts
+- do not reinterpret their conclusions
+- do not recompute metrics
+
+For XGB / RF / TAB prediction artifacts:
+- register files and metadata only
+- do not recompute model metrics
+- do not rerun exit simulations
+- do not train models
+
+METADATA INFERENCE
+
+Infer metadata only when safe from filename/path.
+
+Examples:
+
+model:
+- XGB
+- RF
+- TAB
+
+filter:
+- RAW_ALL_VERIFIED
+- LIQ_5K_HIGH_ACTIVITY
+- LOW_LIQ_MOMENTUM
+- NO_WHALE_FILTER
+
+horizon:
+- 30m
+- 1h
+- 4h
+- 8h
+- 24h
+
+split:
+- train
+- validation
+- test
+
+consensus_tier:
+- TAB_XGB_RF_ALL3
+- TAB_RF_ONLY
+- TAB_XGB_ONLY
+- XGB_RF_ONLY
+- TWO_OF_THREE
+- ALL3_INTERSECT
+
+Do not infer metadata from vague text.
+When unsure, keep null and add METADATA_NOT_INFERRED.
+
+DOCUMENTATION
+
+Create:
+
+docs/architecture/09_artifact_registry.md
+
+Include:
+
+1. Purpose
+2. What problem the registry solves
+3. Current Phase E1 scope
+4. What is explicitly out of scope
+5. ArtifactRecord schema
+6. Path normalization and artifact_id stability
+7. Hashing rules
+8. Hash caching / short-circuit hashing
+9. Schema dtype normalization
+10. Registry paths
+11. Validation rules
+12. How this prevents CSV/SQLite/Parquet divergence
+13. How later phases can mirror registry metadata into SQLite safely
+14. Open questions
+
+Update docs/architecture/architecture_index.md to link this new document if that index exists.
+
+Do not rewrite prior architecture docs unless a link addition is needed.
+
+TESTS
+
+Create:
+
+tests/test_artifact_registry.py
+
+Use temporary directories/files in tests.
+Do not depend on the user's large data artifacts for unit tests.
+
+Tests must cover:
+
+Hash utilities:
+- deterministic content_hash for same file
+- content_hash changes when file content changes
+- content_hash computed by streaming
+- project_relative_path uses POSIX forward slashes
+- artifact_id does not change when absolute project root changes
+- artifact_id remains stable across Windows-style and POSIX-style roots
+- path_id changes when relative path changes
+- content_hash remains identical when same file content is copied to another path
+
+Schema hashing:
+- schema_hash stable for same schema
+- schema_hash changes when column order changes
+- schema_hash changes when columns change
+- schema_hash is stable for int32 vs int64 when normalized
+- schema_hash is stable for float32 vs float64 when normalized
+- raw_dtypes are preserved
+- normalized_dtypes are used in schema_hash
+
+Registry behavior:
+- artifact_id deterministic
+- registry writer is idempotent
+- duplicate path detection
+- duplicate artifact_id detection
+- missing .git returns null git_commit_hash with warning
+- dry-run does not write files
+- CSV row_count detection
+- Parquet row_count detection when parquet support is available
+- non-tabular files registered without row_count/schema_hash
+- hash_status computed on first scan
+- hash_status reused_from_cache on second scan when size and modified_time_ns are unchanged
+- --force-rehash forces recomputation
+- validation separates warnings from errors
+- validation report writes JSON
+- no SQLite writes
+- no source artifact modification
+
+When optional parquet dependencies are unavailable, skip only parquet-specific tests cleanly.
+
+COMMANDS TO RUN
+
+Run:
+
+python -m compileall app scripts tests
+
+Run:
+
+python -m unittest tests.test_artifact_registry -v
+
+Run dry-run:
+
+python scripts/register_existing_artifacts.py --dry-run --verbose
+
+Run actual registration:
+
+python scripts/register_existing_artifacts.py --write-csv --write-summary --verbose
+
+Run validation:
+
+python scripts/validate_artifact_registry.py --verbose
+
+Then run cache behavior check:
+
+python scripts/register_existing_artifacts.py --write-csv --write-summary --verbose
+
+The second actual registration should reuse cached hashes for unchanged files.
+
+Optionally run forced rehash:
+
+python scripts/register_existing_artifacts.py --write-csv --write-summary --force-rehash --verbose
+
+Do not run heavy model/training scripts.
+
+FINAL BRANCH RESPONSE FORMAT
+
+At the end, respond with:
+
+1. Phase / branch name
+2. Original task
+3. What changed
+4. Files created
+5. Files modified
+6. What was not changed
+7. Registry output paths
+8. Number of artifacts registered
+9. Counts by artifact_type
+10. Counts by phase if inferred
+11. Counts by model/filter/horizon/split if inferred
+12. Hash status summary:
+    - computed
+    - reused_from_cache
+    - failed
+    - skipped_by_size_limit
+13. Warnings summary
+14. Errors summary
+15. Validation result
+16. Test results
+17. Whether this challenges the Anchor Plan
+18. Branch recommendation
+
+Expected answer for Anchor Plan:
+
+This branch should not challenge the Anchor Plan.
+It should support the Anchor Plan by making artifact lineage and data consistency auditable.
+
+SUCCESS CRITERIA
+
+Success means:
+
+- E1 registry infrastructure exists.
+- Existing artifacts are registered without modifying them.
+- IDs are stable across OS-specific absolute roots.
+- Hashing is deterministic and cached.
+- Schema hashing is stable under dtype normalization.
+- Validation report works.
+- Tests pass.
+- No SQLite writes occurred.
+- No model/trading/UI behavior changed.
+- Anchor Plan remains unchanged.

@@ -1,0 +1,21 @@
+flowchart TD
+    RAW["Raw market data\n(DexScreener, SQLite snapshots)"]
+    VER["Manually verified datasets"]
+    CLEAN["CLEAN_MODEL_INPUT"]
+    PRED["RF / TAB / XGB predictions"]
+    EXIT["Exit simulation\n(TP / SL / time-stop / fees)"]
+    POL["Strict policy selection\n(top_pct, pair_cap, filter, horizon)"]
+    CMP["Model comparison reports"]
+    DECOMP["Consensus decomposition\n(TAB_XGB_RF_ALL3, TAB_RF_ONLY, ...)"]
+    D1["Phase D1 direct net-profit audit"]
+    NEXT["Future: full direct target dataset"]
+
+    RAW --> VER
+    VER --> CLEAN
+    CLEAN --> PRED
+    PRED --> EXIT
+    EXIT --> POL
+    POL --> CMP
+    CMP --> DECOMP
+    DECOMP --> D1
+    D1 --> NEXT

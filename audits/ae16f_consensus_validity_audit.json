@@ -1,0 +1,14 @@
+{
+  "consensus_rows": 42,
+  "tier_counts": {
+    "MODEL_EVIDENCE_UNAVAILABLE": 41,
+    "SINGLE_MODEL_ONLY": 1
+  },
+  "families_with_evidence": [
+    "RF",
+    "TAB",
+    "XGB"
+  ],
+  "classification": "AE16F_SERVING_SAFE_MODEL_EVIDENCE_PASS",
+  "ae16_original_e6_closed": false
+}

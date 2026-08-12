@@ -1,0 +1,47 @@
+flowchart TD
+    SCAN["Scan cycle\n(DexScreener trending)"]
+    FEAT["Candidate feature build"]
+    SCORE["XGB / TAB / RF scoring"]
+    TIER["Consensus tier assignment"]
+    CONC["Pair cap / concentration check"]
+    ECON["Exit economics evaluation"]
+    ENRICH{"High-value candidate?"}
+    SOL["Solana RPC enrichment"]
+    HEL["Helius validation"]
+    RSS["RSS / news sentiment context"]
+    QW["Qwen memo\n(local Ollama)"]
+    GEM{"Selective audit?"}
+    GMA["Gemini audit"]
+    SAN["Audit reason sanitization"]
+    DEC{"Final decision"}
+    BUY["PAPER_BUY"]
+    WATCH["WATCH"]
+    BLOCK["BLOCK"]
+    AUDIT["Audit trail\n(SQLite + JSONL)"]
+
+    SCAN --> FEAT
+    FEAT --> SCORE
+    SCORE --> TIER
+    TIER --> CONC
+    CONC --> ECON
+    ECON --> ENRICH
+
+    ENRICH -- "yes" --> SOL
+    SOL --> HEL
+    HEL --> RSS
+    ENRICH -- "no / skip" --> RSS
+
+    RSS --> QW
+    QW --> GEM
+    GEM -- "yes" --> GMA
+    GEM -- "no" --> SAN
+    GMA --> SAN
+
+    SAN --> DEC
+    DEC -- "eligible" --> BUY
+    DEC -- "review" --> WATCH
+    DEC -- "blocked" --> BLOCK
+
+    BUY --> AUDIT
+    WATCH --> AUDIT
+    BLOCK --> AUDIT

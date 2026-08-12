@@ -1,0 +1,28 @@
+flowchart TD
+    subgraph L1["Layer 1 — Quantitative Ranking"]
+        XGB["XGB\nRAW_ALL_VERIFIED / 24h / top 0.5%"]
+        TAB["TAB\nLIQ_5K_HIGH_ACTIVITY / 4h / top 2%"]
+        RF["RF\nconservative confirmation"]
+    end
+
+    subgraph L2["Layer 2 — Tiered Consensus"]
+        T1["Tier 1: TAB_XGB_RF_ALL3\nprimary gold signal"]
+        T2["Tier 2: TAB_RF_ONLY\nsecondary focused confirmation"]
+        R1["Reject: TAB_XGB_ONLY\nresearch-only"]
+        R2["Reject: XGB_RF_ONLY\nresearch-only"]
+    end
+
+    XGB --> T1
+    TAB --> T1
+    RF --> T1
+    TAB --> T2
+    RF --> T2
+    TAB --> R1
+    XGB --> R1
+    XGB --> R2
+    RF --> R2
+
+    T1 --> ECON["Exit economics + pair cap"]
+    T2 --> ECON
+    R1 --> RES["Research / audit only"]
+    R2 --> RES

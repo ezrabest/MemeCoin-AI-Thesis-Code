@@ -1,0 +1,38 @@
+flowchart TD
+    subgraph Panels["Future UI panels"]
+        MS["Model Scores\n(XGB / TAB / RF)"]
+        CT["Consensus Tier"]
+        CM["Candidate Monitor"]
+        EP["Exit Policy"]
+        EN["Enrichment\n(Solana / Helius / whale / RSS)"]
+        LLM["LLM Audit\n(Qwen / Gemini / parse status)"]
+        PE["Paper Execution"]
+        DL["Data Lineage\n(artifact hashes / versions)"]
+    end
+
+    subgraph Backend["Backend touchpoints"]
+        API["FastAPI /api/*"]
+        DB["SQLite trader.db"]
+        SET["settings.json / effective settings"]
+        ART["Artifact registry (future)"]
+    end
+
+    subgraph Config["Configuration"]
+        MODE["DEMO / LIVE mode"]
+        GATE["Economic gate thresholds"]
+        BUDGET["LLM / Helius budgets"]
+    end
+
+    API --> MS
+    API --> CT
+    API --> CM
+    API --> EP
+    API --> EN
+    API --> LLM
+    API --> PE
+    API --> DL
+
+    DB --> API
+    SET --> Config
+    Config --> API
+    ART --> DL

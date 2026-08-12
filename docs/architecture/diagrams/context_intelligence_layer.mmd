@@ -1,0 +1,42 @@
+flowchart TD
+    subgraph Market["DexScreener market context"]
+        DS["Trending pairs / snapshots"]
+        LIQ["Liquidity / volume / activity"]
+    end
+
+    subgraph OnChain["On-chain enrichment (future primary)"]
+        RPC["Solana raw RPC parsing"]
+        HEL["Helius validation / enrichment"]
+        SIG["Signer / fee payer / token owner"]
+        DELTA["Token delta / buyer-seller inference"]
+        WAL["Wallet behavior / repeat-wallet signal"]
+        SUS["Suspicious router / relayer detection"]
+        FLOW["Buy/sell pressure over windows"]
+    end
+
+    subgraph Context["Other context sources"]
+        RSS["RSS / news sentiment"]
+        REP["Reputation / scam risk (future)"]
+    end
+
+    subgraph Role["Architectural role"]
+        ENR["Enrich high-value candidates"]
+        AUD["Audit / block signals"]
+        GATE["Not a primary BUY gate"]
+    end
+
+    DS --> ENR
+    LIQ --> ENR
+    RPC --> HEL
+    HEL --> SIG
+    SIG --> DELTA
+    DELTA --> WAL
+    WAL --> SUS
+    SUS --> FLOW
+    FLOW --> ENR
+    FLOW --> AUD
+    RSS --> ENR
+    REP --> AUD
+
+    ENR --> GATE
+    AUD --> GATE

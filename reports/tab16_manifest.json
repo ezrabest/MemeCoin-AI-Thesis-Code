@@ -1,0 +1,79 @@
+{
+  "phase": "AE16_TAB16_DIRECT_TARGET_SERVING_SAFE",
+  "created_at_utc": "2026-07-24T20:50:24.148229+00:00",
+  "output_root": "data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z",
+  "artifact_path": "models/ae16_tab16_direct_target_serving_safe.joblib",
+  "registry_path": "models/ae16_model_registry.json",
+  "training_source": "data/training/manual_verified_datasets_direct_target_v1/LIQ_5K_HIGH_ACTIVITY_1h_TP20308_SL075_FEE0308_TIME_BY_HORIZON_DIRECT_TARGET_v1.parquet",
+  "training_rows": 51589,
+  "validation_rows": 11282,
+  "feature_count": 26,
+  "feature_set_hash_sha256": "881b505b5549d11f904b637033cb973a2273ea10398e0afd277c34b0bb946bd2",
+  "ordered_feature_schema_hash_sha256": "cf7e23e16b6b307795979c98798b9a4ab7f09f18ee2b9ec936845d0f126469ab",
+  "threshold": 0.9928224834607726,
+  "validation_metrics": {
+    "n": 11282,
+    "positive_rate": 0.05805708207764581,
+    "score_min": 2.248777555641922e-06,
+    "score_max": 0.9999635031257692,
+    "score_p50": 3.5771038718897634e-06,
+    "score_p95": 0.9928224834607726,
+    "threshold": 0.9928224834607726,
+    "vote_true_rate": 0.05167523488743131,
+    "accuracy_at_threshold": 0.9735862435738344,
+    "profitability_claimed": false,
+    "note": "validation ranking/calibration metrics only; not a profitability claim",
+    "roc_auc": 0.9954109401589067,
+    "average_precision": 0.9302022433584183,
+    "brier_score": 0.018238927721988218
+  },
+  "selected_rows": 45,
+  "l1_rows_scored": 41,
+  "missing_l1_rows": 4,
+  "rf_status_counts": {
+    "MODEL_EVIDENCE_ATTACHED": 41,
+    "MODEL_EVIDENCE_UNAVAILABLE": 4
+  },
+  "xgb_status_counts": {
+    "MODEL_EVIDENCE_ATTACHED": 41,
+    "MODEL_EVIDENCE_UNAVAILABLE": 4
+  },
+  "tab16_status_counts": {
+    "MODEL_EVIDENCE_ATTACHED": 41,
+    "MODEL_EVIDENCE_UNAVAILABLE": 4
+  },
+  "rf_vote_counts": {
+    "true": 0,
+    "false": 41
+  },
+  "xgb_vote_counts": {
+    "true": 6,
+    "false": 35
+  },
+  "tab16_vote_counts": {
+    "true": 7,
+    "false": 34
+  },
+  "consensus_tier_counts": {
+    "REJECT": 34,
+    "MODEL_EVIDENCE_UNAVAILABLE": 4,
+    "SINGLE_MODEL_ONLY": 1,
+    "TAB_XGB_ONLY": 6
+  },
+  "forbidden_feature_audit_passed": true,
+  "legacy_tab_isolation_passed": true,
+  "registry_enforcement_status": "PASS",
+  "lookahead_audit_passed": true,
+  "db_mutated": false,
+  "python_executable": "E:\\Projects\\Final Project\\memecoin_trader\\.venv\\Scripts\\python.exe",
+  "gate_status": "PASS",
+  "ae16_closed": false,
+  "safety": {
+    "llm_called": false,
+    "backtest_run": false,
+    "wallet_connected": false,
+    "live_trading_enabled": false,
+    "ae17_started": false,
+    "profitability_claimed": false
+  }
+}

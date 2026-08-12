@@ -1,0 +1,7 @@
+{
+  "wallet_connected": false,
+  "live_trading_enabled": false,
+  "live_trading_ready": false,
+  "paper_demo_only": true,
+  "pass": true
+}

@@ -1,0 +1,24 @@
+AE17 Meta-Model / Stacking Layer (deterministic shadow combinator)
+phase: AE17
+classification: AE17_META_STACKING_LAYER_PASS_WITH_LIMITATIONS
+output_root: C:/Users/Shake/AppData/Local/Temp/tmp4uf60ntj/ae17_out
+ae16_root: data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z
+ae16_consensus: data/audits/ae16_tab16_direct_target_serving_safe_20260724T205012Z/data/rf_xgb_tab16_consensus_preview.csv
+input_ae16_rows_consumed: 45
+meta_feature_rows_produced: 45
+meta_shadow_outputs_produced: 45
+consensus_tier_counts: {'REJECT': 34, 'MODEL_EVIDENCE_UNAVAILABLE': 4, 'SINGLE_MODEL_ONLY': 1, 'TAB_XGB_ONLY': 6}
+context_status: AE17_CONTEXT_NOT_AVAILABLE_PENDING_AE18
+pair_concentration_top_pair_share: 0.022222222222222223
+pair_concentration_hhi: 0.022222222222222244
+pair_concentration_status: PAIR_CONCENTRATION_OK|HHI_LOW_CONCENTRATION
+score_clamping_rows_clamped: 0
+null_safety_passed: True
+no_lookahead_passed: True
+feature_parity_passed: True
+lineage_passed: True
+authority_passed: True
+training_performed: false
+ae18_status: BLOCKED
+ae19_status: BLOCKED
+reasons: ['majority_lineage_incomplete_surrogate_ids', 'context_not_available_pending_ae18']

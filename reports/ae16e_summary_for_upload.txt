@@ -1,0 +1,32 @@
+phase: AE16E_DIRECT_TARGET_MODEL_EVIDENCE_ATTACHMENT
+final_classification: AE16E_BLOCKED_FEATURE_PARITY_GAP
+output_root: data/audits/ae16e_model_evidence_feature_parity_20260723_164003
+clean_forward_rows_used: 42
+curated_active_targets_loaded: 45
+toxic_pair_excluded: True
+rf_artifact_selected: data/training/manual_verified_results/phase_e4_direct_target_xgb_rf_full_20260630_195312/models/direct_target_RF_LIQ_5K_HIGH_ACTIVITY_1h_TP20308_SL075_FEE0308_TIME_BY_HORIZON.joblib
+xgb_artifact_selected: data/training/manual_verified_results/phase_e4_direct_target_xgb_rf_full_20260630_195312/models/direct_target_XGB_LIQ_5K_HIGH_ACTIVITY_1h_TP20308_SL075_FEE0308_TIME_BY_HORIZON.joblib
+tab_artifact_selected: NO_SAFE_CLEAN_FORWARD_TAB_JOBLIB: TabICL has preprocessing schema but no local CF-compatible joblib/pt inference artifact
+rf_feature_names_extraction_status: OK
+xgb_feature_names_extraction_status: OK
+tab_feature_names_extraction_status: OK
+rf_missing_blocking_count: 12
+xgb_missing_blocking_count: 12
+tab_missing_blocking_count: 12
+sequential_features_detected: 3
+sequential_features_blocked: 3
+controlled_snapshot_history_used: false
+rf_evidence_rows_attached: 0
+xgb_evidence_rows_attached: 0
+tab_evidence_rows_attached: 0
+consensus_rows_produced: 42
+tier_counts: {'MODEL_EVIDENCE_UNAVAILABLE': 42}
+TAB_XGB_RF_ALL3_exists: False
+TAB_RF_ONLY_exists: False
+ae16_original_e6_closed: False
+trader_db_mutated: false
+wallet_connected: false
+live_trading_enabled: false
+model_training_run: false
+backtest_run: false
+ae17_started: false
