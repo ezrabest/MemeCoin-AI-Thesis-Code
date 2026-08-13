@@ -1,9 +1,0 @@
-{
-  "external_fetch_enabled": false,
-  "external_calls_made": 0,
-  "credentials_required": [
-    "HELIUS_API_KEY"
-  ],
-  "credentials_missing": [],
-  "default_external_fetch_disabled": true
-}

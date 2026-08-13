@@ -63,3 +63,11 @@ artifacts/
 .cursor/
 .DS_Store
 Thumbs.db
+# Thesis submission safety exclusions
+/data/
+/databackup/
+/audits/
+/cache/
+trader.db
+!.env.example
+*.pyc

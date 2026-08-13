@@ -1,9 +1,0 @@
-{
-  "model_training_run": true,
-  "rf_trained": true,
-  "xgb_trained": true,
-  "tab_run": true,
-  "backtest_run": false,
-  "ae17_started": false,
-  "training_error": ""
-}

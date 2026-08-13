@@ -33,3 +33,9 @@ The validated thesis evidence packages are documented separately in the thesis a
 ## Safety boundary
 
 This code package should not be interpreted as a production trading system or as proof of live profitability.
+
+## Submission safety boundary
+
+This repository intentionally excludes local databases such as 	rader.db, raw provider payloads, cached API responses, generated audit packages, API keys, private .env files, wallet secrets, and large local data artifacts.
+
+All thesis experiments were conducted in demo / paper-trading mode only. The repository should not be interpreted as a production live-trading system or as proof of live profitability.
